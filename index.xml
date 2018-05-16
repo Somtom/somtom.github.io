@@ -11,6 +11,212 @@
     <atom:link href="/" rel="self" type="application/rss+xml" />
     
     <item>
+      <title>Oktoberfest Analysis Part II</title>
+      <link>/post/oktoberfest-analysis-part-ii/</link>
+      <pubDate>Wed, 16 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/post/oktoberfest-analysis-part-ii/</guid>
+      <description>&lt;div class=&#34;figure&#34;&gt;
+&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/commons/1/16/Bundesarchiv_B_145_Bild-F011476-0004%2C_M%C3%BCnchen%2C_Landwirtschaftsausstellung.jpg&#34; alt=&#34;Bundesarchiv, B 145 Bild-F011476-0004 / Müller, Simon / CC BY-SA 3.0, via Wikimedia Commons&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;Bundesarchiv, B 145 Bild-F011476-0004 / Müller, Simon / &lt;a href=&#34;https://creativecommons.org/licenses/by-sa/3.0/de/deed.en&#34;&gt;CC BY-SA 3.0&lt;/a&gt;, via Wikimedia Commons&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;introduction&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Introduction&lt;/h1&gt;
+&lt;p&gt;Everybody knows the Oktoberfest which takes place in Munich every year. In this blog post series we are going to look into a public availabe dataset and try to gain some insights about the Oktoberfest.&lt;br /&gt;
+In the &lt;a href=&#34;https://somtom.github.io/post/oktoberfest-analysis-part-i/&#34;&gt;first part&lt;/a&gt; we loaded and described the data. We also analysed the price and consumption of beer and hendl (chicken) over the years.&lt;/p&gt;
+&lt;p&gt;In this second part we are going to have a closer look at the Bavarian Central Agricultural Festival - also known as “ZLF”. We will look at at its influence on beer and hendl consumption, and on the the visitor count. After that we are going to analyse the influence of the 9/11 terror attacks on mean daily visitor count.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;aim&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Aim&lt;/h1&gt;
+&lt;p&gt;Since I am currently diving into the field of data analysis and machine learning, I decided to start my first public analysis in order to use the tools I have been learning so far. The aim of this exploratory data analysis was to create some insights about the Oktoberfest using the public available Oktoberfest data set from the &lt;a href=&#34;https://www.opengov-muenchen.de/&#34;&gt;Munich Open Data side&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Further, I wanted to try the Munich Open Data API to export the data from the server. My biggest aim, though, is to improve my analysis skills by getting feedback from the community.&lt;br /&gt;
+That is why I would really appreciate your feedback. Feel free to comment on this post and to contact me.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;methods-and-material&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Methods and Material&lt;/h1&gt;
+&lt;p&gt;The data description, as well as the importing and processing steps, can be found in the &lt;a href=&#34;https://somtom.github.io/post/oktoberfest-analysis-part-i/&#34;&gt;first part&lt;/a&gt; of this series.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;/div&gt;
+&lt;div id=&#34;data-analysis---part-ii&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Data Analysis - Part II&lt;/h1&gt;
+&lt;div id=&#34;bavarian-central-agricultural-festival-zlf&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Bavarian Central Agricultural Festival (ZLF)&lt;/h2&gt;
+&lt;p&gt;The ZLF is an agricultural exhibition which takes place right next to the Oktoberfest at the Theresienwiese. Before 1996 the exhibition was held every three years. From there on it has been taken place every 4 years.&lt;/p&gt;
+&lt;p&gt;We are going to cover the questions whether or not the ZLF brought more visitors to the Oktoberfest or increased the beer and hendl consumption.&lt;/p&gt;
+&lt;div id=&#34;did-the-zlf-bring-more-visitor-to-the-oktoberfest&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Did the ZLF bring more visitor to the Oktoberfest?&lt;/h3&gt;
+&lt;p&gt;Since the ZLF is at the same location as the Oktoberfest a lot of farmers and other visitors who maybe would normally not come to the Oktoberfest are going there in order to see the exhibition. This could have an influence on the mean daily visitor count. We will further investigate this hypothesis by looking at our data. In order to adjust for the duration we will use the mean daily visitor count for our analysis:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-05-16-oktoberfest-analysis-part-ii_files/figure-html/unnamed-chunk-6-1.png&#34; width=&#34;960&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We can see that the mean daily visitor count varies around 389 thousand. There was a huge drop in 2001 which could be due to the terror attacks at the World Trade Center which took place a few weeks before the start of the Oktoberfest. Two other big drops compared to the previous year can be found in 1988 and 2016. For 2016 one could also argue that this drop is due to the shooting in Munich on July 22nd in the same year and because of the general fear of terror attacks around that time. Actually my research did not find any reasons for the drop in 1988. Even the weather was good during the Oktoberfest in that year.&lt;/p&gt;
+&lt;p&gt;Looking at years the ZLF took place, we can not tell whether the total visitor count is greater or less in general. It looks like, though, that the general mean daily visitor count has been varying around a lower level since 2001 (9/11 year). We are going to investigate this hypothesis later.&lt;/p&gt;
+&lt;p&gt;But first, let’s have a closer look at the total visitor count distribution for years with and without the ZLF:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-05-16-oktoberfest-analysis-part-ii_files/figure-html/unnamed-chunk-7-1.png&#34; width=&#34;960&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;It looks like both box plots are quiet similar. The median of ZLF years is sligthly higher. Nevertheless, we need to be careful, as we have fewer data points for ZLF years than we do for normal years.&lt;/p&gt;
+&lt;p&gt;We will continue with testing the null hypothesis:&lt;br /&gt;
+&lt;em&gt;“ZLF years do not have an impact on mean daily visitor count”&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;To do so we first start with a test for normal distribution in order to select a proper statistical test for comparison. We are going to use the Shapiro-Wilk test for that purpose. It tests the null hypothesis that &lt;em&gt;the data is normally distributed&lt;/em&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# test for normal distribution of ZLF years
+shapiro.test(dt[dt$zlf == 1,]$visitors_day)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+##  Shapiro-Wilk normality test
+## 
+## data:  dt[dt$zlf == 1, ]$visitors_day
+## W = 0.9461, p-value = 0.6473&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# test for normal distribution of normal years
+shapiro.test(dt[dt$zlf == 0,]$visitors_day)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+##  Shapiro-Wilk normality test
+## 
+## data:  dt[dt$zlf == 0, ]$visitors_day
+## W = 0.96583, p-value = 0.5903&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The outcome of the Shapiro-Wilk test suggests that both groups have normal distributed values. The quantile-quantile plot also supports this, except of a few outliers at the ends:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-05-16-oktoberfest-analysis-part-ii_files/figure-html/unnamed-chunk-9-1.png&#34; width=&#34;960&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We will assume that our data is normally distributed and continue with a t-test to compare the means of the two groups:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;t.test(visitors_total ~ zlf, data = dt)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+##  Welch Two Sample t-test
+## 
+## data:  visitors_total by zlf
+## t = -0.47534, df = 13.06, p-value = 0.6424
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  -455204.8  290953.6
+## sample estimates:
+## mean in group 0 mean in group 1 
+##         6295652         6377778&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The outcome of our tests confirms the null hypothesis (&lt;em&gt;the difference in means is equal to 0&lt;/em&gt;).&lt;/p&gt;
+&lt;p&gt;This means that, given this results, &lt;strong&gt;the mean daily Oktoberfest visitor count in ZLF years is not statistically different to normal years&lt;/strong&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;did-the-visitors-consume-more-beer-in-zlf-years&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Did the visitors consume more beer in ZLF years?&lt;/h3&gt;
+&lt;p&gt;Now that we know that the ZLF did not bring more visitors to the Oktoberfest, we could ask whether the visitors consumed more beer in ZLF years. We are going to take a part of the beer consumption plot from part 1 and color the ZLF years:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-05-16-oktoberfest-analysis-part-ii_files/figure-html/unnamed-chunk-11-1.png&#34; width=&#34;960&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;At a first view we cannot see any differences in years with and years without the ZLF. They both follow a similar development. We are going to use the same procedure as above to test for differences. But first a look at the box plots:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-05-16-oktoberfest-analysis-part-ii_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;960&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Both box plots look similar again but the ZLF year data seems to be split. We now start with a test for normal distribution and continue with a proper statistical comparison test:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# test for normal distribution of ZLF years
+shapiro.test(dt[dt$zlf == 1,]$beer_cons_per_visitor)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+##  Shapiro-Wilk normality test
+## 
+## data:  dt[dt$zlf == 1, ]$beer_cons_per_visitor
+## W = 0.87501, p-value = 0.139&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# test for normal distribution of normal years
+shapiro.test(dt[dt$zlf == 0,]$beer_cons_per_visitor)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+##  Shapiro-Wilk normality test
+## 
+## data:  dt[dt$zlf == 0, ]$beer_cons_per_visitor
+## W = 0.92896, p-value = 0.1038&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The outcome of the Shapiro-Wilk test again suggests that both groups have normal distributed values. Nevertheless the p-value is way smaller than before.&lt;/p&gt;
+&lt;p&gt;The quantile-quantile plot shows us why: The lower and higher quantiles don’t fit the line well.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-05-16-oktoberfest-analysis-part-ii_files/figure-html/unnamed-chunk-14-1.png&#34; width=&#34;960&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We could again assume a normal distribution, but in my opinion we should try a non-parametric test here. We are going to use the Mann-Whitney-U-test to compare the groups. In R this test can be performed using the &lt;code&gt;wilcox.test()&lt;/code&gt; function.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;wilcox.test(beer_cons_per_visitor ~ zlf, data = dt, conf.int = T)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+##  Wilcoxon rank sum test
+## 
+## data:  beer_cons_per_visitor by zlf
+## W = 114, p-value = 0.6806
+## alternative hypothesis: true location shift is not equal to 0
+## 95 percent confidence interval:
+##  -0.1330119  0.1371413
+## sample estimates:
+## difference in location 
+##             0.02749851&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The test result suggests that &lt;strong&gt;there is no statistical difference in beer consumption per visitor between ZLF and normal years&lt;/strong&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;did-the-visitors-consume-more-hendl-in-zlf-years&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Did the visitors consume more hendl in ZLF years?&lt;/h3&gt;
+&lt;p&gt;In the last part of our analysis of the ZLF and its influence we are going to look at the hendl consumption. The analysis is going to be performed the same way as above.&lt;/p&gt;
+&lt;p&gt;Again, we start with a colored plot of the hendl consumption development and two box plots:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-05-16-oktoberfest-analysis-part-ii_files/figure-html/unnamed-chunk-16-1.png&#34; width=&#34;960&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-05-16-oktoberfest-analysis-part-ii_files/figure-html/unnamed-chunk-17-1.png&#34; width=&#34;960&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The data distribution looks not very similar for years with and without ZLF. The ZLF boxplot is a little bit more widespread than the other. Nevertheless, we are going to perform our tests as before:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# test for normal distribution of ZLF years
+shapiro.test(dt[dt$zlf == 1,]$hendl_cons_per_visitor)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+##  Shapiro-Wilk normality test
+## 
+## data:  dt[dt$zlf == 1, ]$hendl_cons_per_visitor
+## W = 0.89192, p-value = 0.2088&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# test for normal distribution of normal years
+shapiro.test(dt[dt$zlf == 0,]$hendl_cons_per_visitor)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+##  Shapiro-Wilk normality test
+## 
+## data:  dt[dt$zlf == 0, ]$hendl_cons_per_visitor
+## W = 0.88804, p-value = 0.01444&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-05-16-oktoberfest-analysis-part-ii_files/figure-html/unnamed-chunk-19-1.png&#34; width=&#34;960&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;This time the test for normal distribution suggests that at least the normal year data is not normally distributed. That means we definitely need a non parametric test to compare the group means.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;wilcox.test(hendl_cons_per_visitor ~ zlf, data = dt, conf.int = T)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+##  Wilcoxon rank sum test
+## 
+## data:  hendl_cons_per_visitor by zlf
+## W = 100, p-value = 0.9018
+## alternative hypothesis: true location shift is not equal to 0
+## 95 percent confidence interval:
+##  -0.01821746  0.01349141
+## sample estimates:
+## difference in location 
+##          -0.0007751063&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The Wilcoxon test confirms our impression that &lt;strong&gt;there is no statistical difference between the mean hendl consumption of both groups&lt;/strong&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;mean-daily-visitor-count-before-and-after-911&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Mean daily visitor count before and after 9/11&lt;/h2&gt;
+&lt;p&gt;Finally we will look at the hypothesis that &lt;em&gt;the mean daily visitor count decreased to a lower level after the 9/11 terror attacks&lt;/em&gt;. During the analysis above we saw a huge drop.&lt;/p&gt;
+&lt;p&gt;The boxplot below shows the mean daily visitor distribution of both periods:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-05-16-oktoberfest-analysis-part-ii_files/figure-html/unnamed-chunk-21-1.png&#34; width=&#34;960&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The boxplots show the distribution of mean daily visitor count before and after 9/11 varies. Let’s see what the comparison tests suggest:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# test for normal distribution of data before 2000
+shapiro.test(dt[dt$year &amp;lt; 2000,]$visitors_day)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+##  Shapiro-Wilk normality test
+## 
+## data:  dt[dt$year &amp;lt; 2000, ]$visitors_day
+## W = 0.93676, p-value = 0.3434&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# test for normal distribution of data after 2000
+shapiro.test(dt[dt$year &amp;gt;= 2000,]$visitors_day)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+##  Shapiro-Wilk normality test
+## 
+## data:  dt[dt$year &amp;gt;= 2000, ]$visitors_day
+## W = 0.96424, p-value = 0.7119&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;res &amp;lt;- t.test(visitors_day ~ ifelse(year &amp;lt;= 2000, &amp;quot;After 9/11&amp;quot;, &amp;quot;Before 9/11&amp;quot;), 
+              data = dt, conf.int = T)
+res&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+##  Welch Two Sample t-test
+## 
+## data:  visitors_day by ifelse(year &amp;lt;= 2000, &amp;quot;After 9/11&amp;quot;, &amp;quot;Before 9/11&amp;quot;)
+## t = 3.8337, df = 29.99, p-value = 0.000602
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  13901.66 45598.34
+## sample estimates:
+##  mean in group After 9/11 mean in group Before 9/11 
+##                  404062.5                  374312.5&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The t-test confirms our hypothesis. &lt;strong&gt;The estimated decrease in daily visitors after 9/11 is 29750 visitors&lt;/strong&gt;. The 95% confidence interval for the difference is 13901 to 45598 visitors. If we take the mean daily visitor count across the years before 9/11 that would mean a &lt;strong&gt;7 % decrease&lt;/strong&gt;. Nevertheless, keep in mind that the 9/11 terror attack could just be one reason. There are a lot of other possible reasons which have not been investigated in this analysis.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;conclusion&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Conclusion&lt;/h1&gt;
+&lt;p&gt;In the second part of our analysis we showed that…&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;The years where the ZLF took place &lt;strong&gt;did not bring more visitors to the Oktoberfest, nor did it increase the beer or hendl consumption&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;After the terror attacks in 9/11 the &lt;strong&gt;mean daily visitor count decreased by around 7 %&lt;/strong&gt;.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div id=&#34;acknowledgement&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Acknowledgement&lt;/h1&gt;
+&lt;p&gt;For this part I would like to say thank you to the people who helped me with the ressources for that analysis.I would like to thank Frank Börger and the team from Munich Open Data for answering my questions on the data and providing additional resources. Another great thank you goes to my friend Pat forproofreading. Unfortuantely I could not find enough additional visitor data for the ZLF to provide further insights. Nevertheless, I want to thank Mrs Katharina Höninger (Agrarhistorische Bibliothek) and Mrs Christine Karrer (Bayerischer Bauernverband) for their support.&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
       <title>Oktoberfest Analysis Part I</title>
       <link>/post/oktoberfest-analysis-part-i/</link>
       <pubDate>Tue, 08 May 2018 00:00:00 +0000</pubDate>
@@ -24,7 +230,7 @@
 &lt;h1&gt;Introduction&lt;/h1&gt;
 &lt;p&gt;Everybody knows the Oktoberfest which takes place in Munich every year. In this blog post series we are going to look into a public available data set and try to gain some insights about the Oktoberfest.&lt;/p&gt;
 &lt;p&gt;In the first part we load and describe the data. Furthermore, we will analyse the price and consumption of beer and hendl (chicken) over the years.&lt;/p&gt;
-&lt;p&gt;In the second part we are going to have a closer look at the Bavarian Central Agricultural Festival - also known as “ZLF” - and its influence on beer- and hendl consumption, as well as on visitor count. Further, we are going to look at the influence of the 9/11 terror attacks.&lt;/p&gt;
+&lt;p&gt;In the &lt;a href=&#34;https://somtom.github.io/post/oktoberfest-analysis-part-ii/&#34;&gt;second part&lt;/a&gt; we are going to have a closer look at the Bavarian Central Agricultural Festival - also known as “ZLF” - and its influence on beer- and hendl consumption, as well as on visitor count. Further, we are going to look at the influence of the 9/11 terror attacks.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;aim&#34; class=&#34;section level1&#34;&gt;
 &lt;h1&gt;Aim&lt;/h1&gt;

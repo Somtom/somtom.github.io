@@ -7,10 +7,21 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018</copyright>
-    <lastBuildDate>Tue, 08 May 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 16 May 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/munich-open-data/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Oktoberfest Analysis Part II</title>
+      <link>/post/oktoberfest-analysis-part-ii/</link>
+      <pubDate>Wed, 16 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/post/oktoberfest-analysis-part-ii/</guid>
+      <description>Bundesarchiv, B 145 Bild-F011476-0004 / Müller, Simon / CC BY-SA 3.0, via Wikimedia Commons
+IntroductionEverybody knows the Oktoberfest which takes place in Munich every year. In this blog post series we are going to look into a public availabe dataset and try to gain some insights about the Oktoberfest.
+In the first part we loaded and described the data. We also analysed the price and consumption of beer and hendl (chicken) over the years.</description>
+    </item>
     
     <item>
       <title>Oktoberfest Analysis Part I</title>
