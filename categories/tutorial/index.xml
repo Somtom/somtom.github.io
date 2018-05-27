@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tutorial on Somtom&#39;s Blog</title>
+    <link>/categories/tutorial/</link>
+    <description>Recent content in Tutorial on Somtom&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>&amp;copy; 2018</copyright>
+    <lastBuildDate>Sun, 20 May 2018 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/categories/tutorial/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>San Francisco Crime Heatmaps in R Using BigQuery (`bigrquery`) and `ggmap`</title>
+      <link>/post/san-francisco-crime-heatmaps-in-r-using-bigquery-bigrquery-and-ggmap/</link>
+      <pubDate>Sun, 20 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/post/san-francisco-crime-heatmaps-in-r-using-bigquery-bigrquery-and-ggmap/</guid>
+      <description>By Cary Bass GFDL, CC-BY-SA-3.0 or CC BY-SA 2.5, from Wikimedia Commons
+The aim of todays blogpost is to give a short introduction into the usage of BigQuery inside of R. BigQuery is a product within the Google Cloud Platform and serves as a data warehouse for storage and analytics at high scale. It supports standard SQL dialect which makes it easy to use for people with SQL experience.</description>
+    </item>
+    
+  </channel>
+</rss>

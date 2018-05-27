@@ -22,6 +22,24 @@
     </item>
     
     <item>
+      <title>BigQuery</title>
+      <link>/tags/bigquery/</link>
+      <pubDate>Sun, 27 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/bigquery/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Bigrquery</title>
+      <link>/tags/bigrquery/</link>
+      <pubDate>Sun, 27 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/bigrquery/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Deep-learning</title>
       <link>/tags/deep-learning/</link>
       <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
@@ -36,6 +54,24 @@
       <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
       
       <guid>/tags/demo/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Geocoding</title>
+      <link>/tags/geocoding/</link>
+      <pubDate>Sun, 27 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/geocoding/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Ggmap</title>
+      <link>/tags/ggmap/</link>
+      <pubDate>Sun, 27 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/ggmap/</guid>
       <description></description>
     </item>
     
@@ -60,7 +96,7 @@
     <item>
       <title>R</title>
       <link>/tags/r/</link>
-      <pubDate>Wed, 16 May 2018 00:00:00 +0000</pubDate>
+      <pubDate>Sun, 27 May 2018 00:00:00 +0000</pubDate>
       
       <guid>/tags/r/</guid>
       <description></description>

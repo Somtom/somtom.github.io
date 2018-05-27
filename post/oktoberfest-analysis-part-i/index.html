@@ -29,9 +29,9 @@
       
     
   
-  <meta name="description" content="By Bayreuth2009 GFDL; CC BY 3.0, from Wikimedia Commons
-IntroductionEverybody knows the Oktoberfest which takes place in Munich every year. In this blog post series we are going to look into a public available data set and try to gain some insights about the Oktoberfest.
-In the first part we load and describe the data. Furthermore, we will analyse the price and consumption of beer and hendl (chicken) over the years.">
+  <meta name="description" content="Everybody knows the Oktoberfest which takes place in Munich every year. In this blog post series we are going to look into a public available data set and try to gain some insights about the Oktoberfest.
+In the first part we load and describe the data. Furthermore, we will analyse the price and consumption of beer and hendl (chicken) over the years.
+In the second part we are going to have a closer look at the Bavarian Central Agricultural Festival - also known as “ZLF” - and its influence on beer- and hendl consumption, as well as on visitor count.">
 
   
   <link rel="alternate" hreflang="en-us" href="/post/oktoberfest-analysis-part-i/">
@@ -93,9 +93,9 @@ In the first part we load and describe the data. Furthermore, we will analyse th
   <meta property="og:site_name" content="Somtom&#39;s Blog">
   <meta property="og:url" content="/post/oktoberfest-analysis-part-i/">
   <meta property="og:title" content="Oktoberfest Analysis Part I | Somtom&#39;s Blog">
-  <meta property="og:description" content="By Bayreuth2009 GFDL; CC BY 3.0, from Wikimedia Commons
-IntroductionEverybody knows the Oktoberfest which takes place in Munich every year. In this blog post series we are going to look into a public available data set and try to gain some insights about the Oktoberfest.
-In the first part we load and describe the data. Furthermore, we will analyse the price and consumption of beer and hendl (chicken) over the years.">
+  <meta property="og:description" content="Everybody knows the Oktoberfest which takes place in Munich every year. In this blog post series we are going to look into a public available data set and try to gain some insights about the Oktoberfest.
+In the first part we load and describe the data. Furthermore, we will analyse the price and consumption of beer and hendl (chicken) over the years.
+In the second part we are going to have a closer look at the Bavarian Central Agricultural Festival - also known as “ZLF” - and its influence on beer- and hendl consumption, as well as on visitor count."><meta property="og:image" content="/img/headers/oktoberfest-1.png">
   <meta property="og:locale" content="en-us">
   
   <meta property="article:published_time" content="2018-05-08T00:00:00&#43;00:00">
@@ -229,6 +229,15 @@ In the first part we load and describe the data. Furthermore, we will analyse th
 <article class="article" itemscope itemtype="http://schema.org/Article">
 
   
+<div class="article-header">
+  
+  
+    <img src="/img/./headers/oktoberfest-1.png" class="article-banner" itemprop="image">
+  
+
+  <span class="article-header-caption">Image credit: By Bayreuth2009 <a href="http://www.gnu.org/copyleft/fdl.html" target="_blank">GFDL</a>; <a href="https://creativecommons.org/licenses/by/3.0" target="_blank">CC BY 3.0</a>, from Wikimedia Commons</span>
+</div>
+
 
 
   <div class="article-container">
@@ -323,16 +332,9 @@ In the first part we load and describe the data. Furthermore, we will analyse th
 
 
     <div class="article-style" itemprop="articleBody">
-      <div class="figure">
-<img src="https://upload.wikimedia.org/wikipedia/commons/a/ab/M%C3%BCnchen%2C_Sch%C3%BCtzen-Festzelt%2C_Oktoberfest_2012_%2801%29.jpg" alt="By Bayreuth2009 GFDL; CC BY 3.0, from Wikimedia Commons" />
-<p class="caption">By Bayreuth2009 <a href="http://www.gnu.org/copyleft/fdl.html">GFDL</a>; <a href="https://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>, from Wikimedia Commons</p>
-</div>
-<div id="introduction" class="section level1">
-<h1>Introduction</h1>
-<p>Everybody knows the Oktoberfest which takes place in Munich every year. In this blog post series we are going to look into a public available data set and try to gain some insights about the Oktoberfest.</p>
+      <p>Everybody knows the Oktoberfest which takes place in Munich every year. In this blog post series we are going to look into a public available data set and try to gain some insights about the Oktoberfest.</p>
 <p>In the first part we load and describe the data. Furthermore, we will analyse the price and consumption of beer and hendl (chicken) over the years.</p>
 <p>In the <a href="https://somtom.github.io/post/oktoberfest-analysis-part-ii/">second part</a> we are going to have a closer look at the Bavarian Central Agricultural Festival - also known as “ZLF” - and its influence on beer- and hendl consumption, as well as on visitor count. Further, we are going to look at the influence of the 9/11 terror attacks.</p>
-</div>
 <div id="aim" class="section level1">
 <h1>Aim</h1>
 <p>Since I am currently diving into the field of data analysis and machine learning, I decided to start my first public analysis in order to use the tools I have been learning so far. The aim of this exploratory data analysis was to create some insights about the Oktoberfest using the public available Oktoberfest data set from the <a href="https://www.opengov-muenchen.de/">Munich Open Data side</a>.</p>
@@ -344,7 +346,7 @@ That is why I would really appreciate your feedback. Feel free to comment on thi
 <p>For the analysis I used the public available Oktoberfest data set which can be found <a href="https://www.opengov-muenchen.de/dataset/oktoberfest/resource/e0f664cf-6dd9-4743-bd2b-81a8b18bd1d2">here</a>. Additional information which can not be found in the data description online, has been provided by the city of Munich via email contact.</p>
 </div>
 <div id="set-up-environment" class="section level1">
-<h1>Set up environment</h1>
+<h1>Set up Environment</h1>
 <p>We will start this analysis by loading some required packages:</p>
 <pre class="r"><code>suppressMessages({
 require(httr, quietly = T)
@@ -354,7 +356,7 @@ require(grid, quietly = T, warn.conflicts = F)
 })</code></pre>
 </div>
 <div id="importing-data-from-api" class="section level1">
-<h1>Importing data from API</h1>
+<h1>Importing Data from API</h1>
 <p>Having the environment set up, we will use the <em>Munich Open Data API</em> and the <code>httr</code> library to load our data from the server, and store it as a <code>data.frame</code> within R.<br />
 The resource-id (<code>e0f664cf-6dd9-4743-bd2b-81a8b18bd1d2</code>), which we are going to use to get our data via the API, can be found under additional information (German: “zusätzliche Informationen”) at the bottom of the <a href="https://www.opengov-muenchen.de/dataset/oktoberfest/resource/e0f664cf-6dd9-4743-bd2b-81a8b18bd1d2">data set side</a>.</p>
 <pre class="r"><code>url &lt;- &quot;https://www.opengov-muenchen.de&quot;
@@ -395,8 +397,8 @@ dt &lt;- bind_rows(result$result$records)</code></pre>
             visitors_day = as.integer(besucher_tag)*1000) # change to nr. of people</code></pre>
 </div>
 <div id="data-description" class="section level1">
-<h1>Data description</h1>
-<p>Our data have 9 columns and 32 rows. The data set contains yearly data on beer- and hendl (chicken) consumption from 1985 to 2016. It also provides information about the price of both as well as total visitors, mean daily visitors, and the duration of the Oktoberfest in each year.</p>
+<h1>Data Description</h1>
+<p>Our data have 9 columns and 33 rows. The data set contains yearly data on beer- and hendl (chicken) consumption from 1985 to 2017. It also provides information about the price of both as well as total visitors, mean daily visitors, and the duration of the Oktoberfest in each year.</p>
 <p>The table below gives a quick overview on variable names and their metrics.</p>
 <table>
 <thead>
@@ -434,7 +436,7 @@ dt &lt;- bind_rows(result$result$records)</code></pre>
 </table>
 </div>
 <div id="data-munging" class="section level1">
-<h1>Data munging</h1>
+<h1>Data Munging</h1>
 <p>Now we are going to start to get our hands dirty and work with the Oktoberfest data set. We add some information like the years when the Bavarian Central Agricultural Festival (ZLF) took place and other variables which we are going to use either in part 1 or 2 of our analysis.</p>
 <pre class="r"><code># generate vector with years in which zlf festival took place 
 # (every three years up to 1996; every 4 years from 2000 on)
@@ -449,7 +451,7 @@ dt &lt;- dt %&gt;%
 <hr />
 </div>
 <div id="data-analysis" class="section level1">
-<h1>Data analysis</h1>
+<h1>Data Analysis</h1>
 <p>In our data analysis we are going to look at the following topics:</p>
 <p><strong>Part I:</strong></p>
 <ol style="list-style-type: decimal">
@@ -463,11 +465,11 @@ dt &lt;- dt %&gt;%
 </ol>
 <p>We are going to use visualizations and simple modeling techniques to describe the data. Further, we are going to perform statistical tests to compare means in groups.</p>
 <div id="beer-price-and-consumption" class="section level2">
-<h2>Beer price and consumption</h2>
+<h2>Beer Price and Consumption</h2>
 <p>Every year one of the most discussed topics around the Oktoberfest is the increased beer price. People are always complaining that the beer is too expensive. Since we have the historical data on beer prices, our first question on the data set is:</p>
-<p><strong>How did the beer price develope from 1985 to 2016?</strong></p>
+<p><strong>How did the beer price develope from 1985 to 2017?</strong></p>
 <div id="modeling-beer-price-development-over-the-years" class="section level3">
-<h3>Modeling beer price development over the years</h3>
+<h3>Modeling Beer Price Development Over the Years</h3>
 <p><em>Note: The currency used in the data is €. All prices before the year 2002 have been transformed from DM (German currency before 2002) to Euro.</em></p>
 <p><img src="/post/2018-05-08-oktoberfest-analysis-part-i_files/figure-html/unnamed-chunk-7-1.png" width="960" style="display: block; margin: auto;" /></p>
 <p>In fact, the price for 1L beer increased almost linear over the years. We will try to use a simple linear regression model to describe the data:</p>
@@ -478,19 +480,19 @@ summary(fit_beer)</code></pre>
 ## lm(formula = beer_price ~ year, data = dt)
 ## 
 ## Residuals:
-##      Min       1Q   Median       3Q      Max 
-## -0.39713 -0.14417  0.01411  0.10733  0.50261 
+##     Min      1Q  Median      3Q     Max 
+## -0.4185 -0.1280  0.0050  0.1286  0.5254 
 ## 
 ## Coefficients:
 ##               Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept) -4.786e+02  8.744e+00  -54.74   &lt;2e-16 ***
-## year         2.425e-01  4.371e-03   55.48   &lt;2e-16 ***
+## (Intercept) -4.830e+02  8.603e+00  -56.15   &lt;2e-16 ***
+## year         2.447e-01  4.299e-03   56.92   &lt;2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 0.2283 on 30 degrees of freedom
-## Multiple R-squared:  0.9903, Adjusted R-squared:   0.99 
-## F-statistic:  3078 on 1 and 30 DF,  p-value: &lt; 2.2e-16</code></pre>
+## Residual standard error: 0.2352 on 31 degrees of freedom
+## Multiple R-squared:  0.9905, Adjusted R-squared:  0.9902 
+## F-statistic:  3240 on 1 and 31 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>Our model suggests that the beer price increased by <strong>0.24 Cents per year</strong>.</p>
 <p>Fitting models to the years with different currencies separately, we see a small difference in estimated price increase per year:</p>
 <pre class="r"><code>fit_dm &lt;- lm(beer_price ~ year, data = subset(dt, year &lt; 2002))
@@ -521,18 +523,18 @@ summary(fit_euro)</code></pre>
 ## 
 ## Residuals:
 ##       Min        1Q    Median        3Q       Max 
-## -0.206940 -0.015405  0.003452  0.022470  0.296917 
+## -0.206721 -0.013706  0.003794  0.020860  0.298456 
 ## 
 ## Coefficients:
 ##               Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept) -5.811e+02  1.422e+01  -40.87 4.07e-15 ***
-## year         2.935e-01  7.078e-03   41.46 3.37e-15 ***
+## (Intercept) -5.817e+02  1.244e+01  -46.75   &lt;2e-16 ***
+## year         2.938e-01  6.192e-03   47.45   &lt;2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 0.1184 on 13 degrees of freedom
-## Multiple R-squared:  0.9925, Adjusted R-squared:  0.9919 
-## F-statistic:  1719 on 1 and 13 DF,  p-value: 3.37e-15</code></pre>
+## Residual standard error: 0.1142 on 14 degrees of freedom
+## Multiple R-squared:  0.9938, Adjusted R-squared:  0.9934 
+## F-statistic:  2251 on 1 and 14 DF,  p-value: &lt; 2.2e-16</code></pre>
 <ul>
 <li>In years with DM currency (1985 to 2001) the estimated yearly price increase was around <strong>0.21 Cents per year</strong>.</li>
 <li>In the years after the Euro has been introduced (&gt;2001), the estimated yearly price increase was <strong>0.29 Cents per year</strong>.</li>
@@ -540,7 +542,7 @@ summary(fit_euro)</code></pre>
 <p><img src="/post/2018-05-08-oktoberfest-analysis-part-i_files/figure-html/unnamed-chunk-10-1.png" width="960" style="display: block; margin: auto;" /></p>
 </div>
 <div id="influence-of-beer-price-on-consumption" class="section level3">
-<h3>Influence of beer price on consumption</h3>
+<h3>Influence of Beer Price on Consumption</h3>
 <p>Now that we confirmed that the price increased over the years, the next question which arises is:</p>
 <p><strong>Did this increase have a negative influence on mean beer consumption per visitor?</strong></p>
 <p>In order to answer this question we are going to start with a visualization of our data:</p>
@@ -552,14 +554,14 @@ summary(fit_euro)</code></pre>
 ##  Pearson&#39;s product-moment correlation
 ## 
 ## data:  dt$beer_cons_per_visitor and dt$beer_price
-## t = 15.09, df = 30, p-value = 1.495e-15
+## t = 16.204, df = 31, p-value &lt; 2.2e-16
 ## alternative hypothesis: true correlation is not equal to 0
 ## 95 percent confidence interval:
-##  0.8796126 0.9705661
+##  0.8920491 0.9730963
 ## sample estimates:
 ##       cor 
-## 0.9399953</code></pre>
-<p>The test suggests a true correlation with a Pearson correlation coefficient of 0.94. The p-value is way below 0.05 and we have a narrow confidence interval. If we plot the data, all points seem to be around one line:</p>
+## 0.9457298</code></pre>
+<p>The test suggests a true correlation with a Pearson correlation coefficient of 0.95. The p-value is way below 0.05 and we have a narrow confidence interval. If we plot the data, all points seem to be around one line:</p>
 <p><img src="/post/2018-05-08-oktoberfest-analysis-part-i_files/figure-html/unnamed-chunk-13-1.png" width="960" style="display: block; margin: auto;" /></p>
 <p>This result would suggest that beer consumption increases the higher the beer price gets. Nevertheless, in my opinion, this is an example that <strong>correlation does not imply causation</strong>. I think that the increased consumption is a separate phenomena and not caused by increased prices. One reason you can think of might be:</p>
 <ul>
@@ -569,10 +571,10 @@ summary(fit_euro)</code></pre>
 </div>
 </div>
 <div id="hendl-price-and-consumption" class="section level2">
-<h2>Hendl price and consumption</h2>
+<h2>Hendl Price and Consumption</h2>
 <p>On the Oktoberfest it is not just about drinking. A lot of people also like to have something to eat besides their beer. So what about the hendl consumption and price development?</p>
 <div id="modeling-hendl-price-development" class="section level3">
-<h3>Modeling hendl price development</h3>
+<h3>Modeling Hendl Price Development</h3>
 <p>As before we are going to have a look at the price only first:</p>
 <p><em>Important Notes</em>:</p>
 <ol style="list-style-type: decimal">
@@ -590,24 +592,24 @@ summary(fit_hendl)</code></pre>
 ## 
 ## Residuals:
 ##      Min       1Q   Median       3Q      Max 
-## -0.32657 -0.16946 -0.04789  0.04451  0.78319 
+## -0.32939 -0.16118 -0.06931  0.10417  0.75069 
 ## 
 ## Coefficients:
 ##               Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept) -418.23510   28.14456  -14.86 2.22e-10 ***
-## year           0.21289    0.01402   15.19 1.63e-10 ***
+## (Intercept) -426.73552   25.49174  -16.74 1.46e-11 ***
+## year           0.21713    0.01269   17.11 1.05e-11 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 0.2831 on 15 degrees of freedom
-## Multiple R-squared:  0.939,  Adjusted R-squared:  0.9349 
-## F-statistic: 230.7 on 1 and 15 DF,  p-value: 1.626e-10</code></pre>
-<p>The model suggests that the hendl price increased by <strong>0.21 Cents per year</strong> since 2000.</p>
+## Residual standard error: 0.2794 on 16 degrees of freedom
+## Multiple R-squared:  0.9482, Adjusted R-squared:  0.9449 
+## F-statistic: 292.7 on 1 and 16 DF,  p-value: 1.048e-11</code></pre>
+<p>The model suggests that the hendl price increased by <strong>0.22 Cents per year</strong> since 2000.</p>
 <p>When we add the model to our plot it looks like this:</p>
 <p><img src="/post/2018-05-08-oktoberfest-analysis-part-i_files/figure-html/unnamed-chunk-16-1.png" width="960" style="display: block; margin: auto;" /></p>
 </div>
 <div id="influence-of-hendl-price-on-consumption" class="section level3">
-<h3>Influence of hendl price on consumption</h3>
+<h3>Influence of Hendl Price on Consumption</h3>
 <p>Above we saw that the beer price did not have a negative influence on the beer consumption. We are going to ask the same question for the hendl price and consumption. To get a first overview, we plot the data.</p>
 <p><img src="/post/2018-05-08-oktoberfest-analysis-part-i_files/figure-html/unnamed-chunk-17-1.png" width="960" style="display: block; margin: auto;" /></p>
 <p>We see that the hendl consumption dropped in 2001 after slowly decreasing from 1991 on. After the drop, the consumption stayed at a constant level, whereas the price went up.<br />
@@ -630,13 +632,13 @@ For me it looks like the hendl consumption being correlated with price until yea
 ##  Pearson&#39;s product-moment correlation
 ## 
 ## data:  hendl_cons_per_visitor * 100 and hendl_price
-## t = -0.84543, df = 15, p-value = 0.4112
+## t = -0.98985, df = 16, p-value = 0.337
 ## alternative hypothesis: true correlation is not equal to 0
 ## 95 percent confidence interval:
-##  -0.6293951  0.2979159
+##  -0.6357835  0.2552837
 ## sample estimates:
 ##        cor 
-## -0.2132669</code></pre>
+## -0.2402164</code></pre>
 <p>The correlation coefficients suggest a negative correlation for both periods. Nevertheless, the tests confirm the null hypothesis, which says that there is <strong>no true correlation between the variables</strong>.</p>
 <p>For the period before 2000 there is at least a strong tendency (<code>p = 0.0501576</code>) for a true negative correlation. Despite that, the confidence interval for the correlation coefficient is very big, which gives us a strong uncertainty.</p>
 <p><img src="/post/2018-05-08-oktoberfest-analysis-part-i_files/figure-html/unnamed-chunk-19-1.png" width="960" style="display: block; margin: auto;" /></p>
@@ -652,7 +654,7 @@ For me it looks like the hendl consumption being correlated with price until yea
 <ul>
 <li><p>The beer price increased over the years. We modeled a increase of <strong>0.24 Cent per year</strong> with differences before and after Euro introduction</p></li>
 <li><p>The <strong>increase in beer price did not have a negative influence on beer consumption</strong>. The consumption even went up over the years</p></li>
-<li><p>Hendl price also <strong>increased steadily</strong>. For the years since 2000 our model estimated a price increase of <strong>0.21 Cent per year</strong></p></li>
+<li><p>Hendl price also <strong>increased steadily</strong>. For the years since 2000 our model estimated a price increase of <strong>0.22 Cent per year</strong></p></li>
 <li><p>The hendl price actually seem to have a <strong>influence on hendl consumption up to a specific point</strong>. We showed a tendency for negative correlation before year 2000.</p></li>
 </ul>
 <p>In addition, I learned that the Munich Open Data API is not that difficult to use.</p>

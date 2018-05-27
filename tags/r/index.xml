@@ -7,10 +7,20 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018</copyright>
-    <lastBuildDate>Wed, 16 May 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 27 May 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/r/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>San Francisco Crime Heatmaps in R Using BigQuery bigrquery and ggmap</title>
+      <link>/post/san-francisco-crime-heatmaps-in-r-using-bigquery-bigrquery-and-ggmap/</link>
+      <pubDate>Sun, 27 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/post/san-francisco-crime-heatmaps-in-r-using-bigquery-bigrquery-and-ggmap/</guid>
+      <description>The aim of today’s blog post is to give a short introduction into the usage of BigQuery inside of R. BigQuery is a product within the Google Cloud Platform and serves as a data warehouse for storage and analytics at high scale. It supports standard SQL dialect which makes it easy to use for people with SQL experience.
+We are going to use one of the public data sets available on BigQuery and have a short look at the recorded incidents of the San Francisco Police Departments.</description>
+    </item>
     
     <item>
       <title>Oktoberfest Analysis Part II</title>
@@ -18,9 +28,9 @@
       <pubDate>Wed, 16 May 2018 00:00:00 +0000</pubDate>
       
       <guid>/post/oktoberfest-analysis-part-ii/</guid>
-      <description>Bundesarchiv, B 145 Bild-F011476-0004 / Müller, Simon / CC BY-SA 3.0, via Wikimedia Commons
-IntroductionEverybody knows the Oktoberfest which takes place in Munich every year. In this blog post series we are going to look into a public availabe dataset and try to gain some insights about the Oktoberfest.
-In the first part we loaded and described the data. We also analysed the price and consumption of beer and hendl (chicken) over the years.</description>
+      <description>Everybody knows the Oktoberfest which takes place in Munich every year. In this blog post series we are going to look into a public availabe dataset and try to gain some insights about the Oktoberfest.
+In the first part we loaded and described the data. We also analysed the price and consumption of beer and hendl (chicken) over the years.
+In this second part we are going to have a closer look at the Bavarian Central Agricultural Festival - also known as “ZLF”.</description>
     </item>
     
     <item>
@@ -29,9 +39,9 @@ In the first part we loaded and described the data. We also analysed the price a
       <pubDate>Tue, 08 May 2018 00:00:00 +0000</pubDate>
       
       <guid>/post/oktoberfest-analysis-part-i/</guid>
-      <description>By Bayreuth2009 GFDL; CC BY 3.0, from Wikimedia Commons
-IntroductionEverybody knows the Oktoberfest which takes place in Munich every year. In this blog post series we are going to look into a public available data set and try to gain some insights about the Oktoberfest.
-In the first part we load and describe the data. Furthermore, we will analyse the price and consumption of beer and hendl (chicken) over the years.</description>
+      <description>Everybody knows the Oktoberfest which takes place in Munich every year. In this blog post series we are going to look into a public available data set and try to gain some insights about the Oktoberfest.
+In the first part we load and describe the data. Furthermore, we will analyse the price and consumption of beer and hendl (chicken) over the years.
+In the second part we are going to have a closer look at the Bavarian Central Agricultural Festival - also known as “ZLF” - and its influence on beer- and hendl consumption, as well as on visitor count.</description>
     </item>
     
   </channel>

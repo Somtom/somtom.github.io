@@ -5,6 +5,15 @@
     
     <url>
     
+      <loc>/post/san-francisco-crime-heatmaps-in-r-using-bigquery-bigrquery-and-ggmap/</loc>
+      <lastmod>2018-05-27T00:00:00+00:00</lastmod>
+    </url>
+    
+  
+    
+    
+    <url>
+    
       <loc>/post/oktoberfest-analysis-part-ii/</loc>
       <lastmod>2018-05-16T00:00:00+00:00</lastmod>
     </url>
@@ -134,6 +143,26 @@
     
     <url>
     
+      <loc>/tags/bigquery/</loc>
+      <lastmod>2018-05-27T00:00:00+00:00</lastmod>
+      <priority>0</priority>
+    </url>
+    
+  
+    
+    
+    <url>
+    
+      <loc>/tags/bigrquery/</loc>
+      <lastmod>2018-05-27T00:00:00+00:00</lastmod>
+      <priority>0</priority>
+    </url>
+    
+  
+    
+    
+    <url>
+    
       <loc>/categories/</loc>
       <lastmod>2018-05-16T00:00:00+00:00</lastmod>
       <priority>0</priority>
@@ -156,6 +185,26 @@
     
       <loc>/tags/demo/</loc>
       <lastmod>2016-04-27T00:00:00+00:00</lastmod>
+      <priority>0</priority>
+    </url>
+    
+  
+    
+    
+    <url>
+    
+      <loc>/tags/geocoding/</loc>
+      <lastmod>2018-05-27T00:00:00+00:00</lastmod>
+      <priority>0</priority>
+    </url>
+    
+  
+    
+    
+    <url>
+    
+      <loc>/tags/ggmap/</loc>
+      <lastmod>2018-05-27T00:00:00+00:00</lastmod>
       <priority>0</priority>
     </url>
     
@@ -205,7 +254,7 @@
     <url>
     
       <loc>/tags/r/</loc>
-      <lastmod>2018-05-16T00:00:00+00:00</lastmod>
+      <lastmod>2018-05-27T00:00:00+00:00</lastmod>
       <priority>0</priority>
     </url>
     
@@ -226,6 +275,16 @@
     
       <loc>/tags/</loc>
       <lastmod>2017-01-01T00:00:00+00:00</lastmod>
+      <priority>0</priority>
+    </url>
+    
+  
+    
+    
+    <url>
+    
+      <loc>/categories/tutorials/</loc>
+      <lastmod>2018-05-27T00:00:00+00:00</lastmod>
       <priority>0</priority>
     </url>
     
