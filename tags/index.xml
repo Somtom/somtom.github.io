@@ -76,6 +76,15 @@
     </item>
     
     <item>
+      <title>Leaflet</title>
+      <link>/tags/leaflet/</link>
+      <pubDate>Mon, 28 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/leaflet/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Munich Open Data</title>
       <link>/tags/munich-open-data/</link>
       <pubDate>Wed, 16 May 2018 00:00:00 +0000</pubDate>
@@ -96,9 +105,36 @@
     <item>
       <title>R</title>
       <link>/tags/r/</link>
-      <pubDate>Sun, 27 May 2018 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 28 May 2018 00:00:00 +0000</pubDate>
       
       <guid>/tags/r/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>RShiny</title>
+      <link>/tags/rshiny/</link>
+      <pubDate>Mon, 28 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/rshiny/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Shinydashboard</title>
+      <link>/tags/shinydashboard/</link>
+      <pubDate>Mon, 28 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/shinydashboard/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Wikipedia</title>
+      <link>/tags/wikipedia/</link>
+      <pubDate>Mon, 28 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/wikipedia/</guid>
       <description></description>
     </item>
     

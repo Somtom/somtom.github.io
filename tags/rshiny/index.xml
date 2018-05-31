@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>RShiny on Somtom&#39;s Blog</title>
+    <link>/tags/rshiny/</link>
+    <description>Recent content in RShiny on Somtom&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>&amp;copy; 2018</copyright>
+    <lastBuildDate>Mon, 28 May 2018 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/rshiny/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>USA School Shootings</title>
+      <link>/post/usa-school-shootings/</link>
+      <pubDate>Mon, 28 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/post/usa-school-shootings/</guid>
+      <description>22…… this is the count of school shootings which took place in USA within the first 21 weeks in 2018. Statistically this means that there has been more than 1 shooting per week. The Washington Post wrote that this led to more deaths at schools than members of the US military have been killed while being deployed this year.
+We hear about those shootings quite often in the news, and after almost every of theses a new discussion about the USA gun laws arises.</description>
+    </item>
+    
+  </channel>
+</rss>
