@@ -5,6 +5,15 @@
     
     <url>
     
+      <loc>/post/munich-bike-data-info-graphic/</loc>
+      <lastmod>2018-11-03T00:00:00+00:00</lastmod>
+    </url>
+    
+  
+    
+    
+    <url>
+    
       <loc>/post/usa-school-shootings/</loc>
       <lastmod>2018-05-28T00:00:00+00:00</lastmod>
     </url>
@@ -143,7 +152,7 @@
     <url>
     
       <loc>/categories/analysis/</loc>
-      <lastmod>2018-05-16T00:00:00+00:00</lastmod>
+      <lastmod>2018-11-03T00:00:00+00:00</lastmod>
       <priority>0</priority>
     </url>
     
@@ -172,8 +181,18 @@
     
     <url>
     
+      <loc>/tags/bike-data/</loc>
+      <lastmod>2018-11-03T00:00:00+00:00</lastmod>
+      <priority>0</priority>
+    </url>
+    
+  
+    
+    
+    <url>
+    
       <loc>/categories/</loc>
-      <lastmod>2018-05-16T00:00:00+00:00</lastmod>
+      <lastmod>2018-11-03T00:00:00+00:00</lastmod>
       <priority>0</priority>
     </url>
     
@@ -232,6 +251,16 @@
     
     <url>
     
+      <loc>/categories/infographic/</loc>
+      <lastmod>2018-11-03T00:00:00+00:00</lastmod>
+      <priority>0</priority>
+    </url>
+    
+  
+    
+    
+    <url>
+    
       <loc>/tags/leaflet/</loc>
       <lastmod>2018-05-28T00:00:00+00:00</lastmod>
       <priority>0</priority>
@@ -243,7 +272,7 @@
     <url>
     
       <loc>/tags/munich-open-data/</loc>
-      <lastmod>2018-05-16T00:00:00+00:00</lastmod>
+      <lastmod>2018-11-03T00:00:00+00:00</lastmod>
       <priority>0</priority>
     </url>
     
@@ -283,7 +312,7 @@
     <url>
     
       <loc>/tags/r/</loc>
-      <lastmod>2018-05-28T00:00:00+00:00</lastmod>
+      <lastmod>2018-11-03T00:00:00+00:00</lastmod>
       <priority>0</priority>
     </url>
     

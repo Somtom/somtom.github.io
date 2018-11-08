@@ -11,6 +11,1136 @@
     <atom:link href="/" rel="self" type="application/rss+xml" />
     
     <item>
+      <title>Munich Bike Data Info Graphic</title>
+      <link>/post/munich-bike-data-info-graphic/</link>
+      <pubDate>Sat, 03 Nov 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/post/munich-bike-data-info-graphic/</guid>
+      <description>&lt;div class=&#34;figure&#34;&gt;
+&lt;img src=&#34;/rmarkdown-libs/infographic/insights_on_bike_traffic.png&#34; /&gt;
+
+&lt;/div&gt;
+&lt;div id=&#34;analysis&#34; style=&#34;display: none&#34;&gt;
+&lt;hr /&gt;
+&lt;p&gt;During this year’s summer break there had been a railway construction site which affected the train I usually use for commuting to work. This led to a lot of additional commuting time. Thus, I decided to repair my old mountain bike and give it a try to go to work by bike.&lt;br /&gt;
+During the one hour ride I wondered how many people made the same decision and if there would be any data about Munich bike traffic with the use of which I could get some insights about Munich’s bike traffic. Shortly after that, I happened to see a twitter post of &lt;a href=&#34;https://twitter.com/opendata_muc/status/1039758780853104646&#34;&gt;OpenData Munich&lt;/a&gt; which announced a new data set containing the data of Munich’s 6 continuous bike counting stations for the years 2017 and 2018. The counting stations provide data such as 15-minute and daily bike counts for 2 directions.&lt;/p&gt;
+&lt;p&gt;I contacted the team in order to ask for additional information and received even more data as well as some nice inspirations. I picked up the idea of creating a info-graphic about Munich bike data. Thus, I had a new project and started the journey of designing my first info-graphic.&lt;/p&gt;
+&lt;p&gt;In this post we will go through the analysis behind the info-graphic you already saw above. We are going to answer questions such as:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#station_map&#34;&gt;Can we create a map of all counting stations?&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#average_counts&#34;&gt;What are average 15 minute and daily counts (across stations and per station)?&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#wrong_direction&#34;&gt;How many people are driving in the wrong direction at Arnulf Street (this station is at a one-way road)?&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#count_records&#34;&gt;What are the highest counts which had been measured?&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#bike_times&#34;&gt;When are most people biking (time of the year, weather, …)?&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#commuting&#34;&gt;How does the commuting traffic look like? Can we model it somehow and get some insights out of the data?&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If you want to skip the data import and jump directly to the preprocessing step, click &lt;a href=&#34;#preprocessing&#34;&gt;here&lt;/a&gt;. To directly get into the analysis, click &lt;a href=&#34;#analysis&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;h1 id=&#34;set-up-environment&#34;&gt;Set up Environment&lt;/h1&gt;
+&lt;p&gt;First, as always, we load some packages needed for this analysis and create a custom theme to make the plots look nicer.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;suppressMessages({
+  library(tidyverse)
+  library(lubridate)
+  library(geosphere)
+  library(ggmap)
+  library(reshape2)
+  library(modelr)
+  library(broom)
+})
+
+background_colors &amp;lt;- c(&amp;quot;#efedec&amp;quot;, &amp;quot;white&amp;quot;)
+plot_colors &amp;lt;- c(&amp;quot;#62c3db&amp;quot;, &amp;quot;#136d8f&amp;quot;, &amp;quot;#072d40&amp;quot;, &amp;quot;#f6a735&amp;quot;, &amp;quot;#fbd74d&amp;quot;)
+line_colors &amp;lt;- c(&amp;quot;black&amp;quot;)
+
+# Custom theme
+my_theme &amp;lt;- list(
+ theme(
+    plot.background = element_rect(fill =  background_colors[2]),
+    text = element_text(color = line_colors),
+    panel.background = element_rect(fill =  background_colors[2]),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    axis.line.y = element_line(color =  line_colors),
+    axis.line.x = element_line(color =  line_colors),
+    axis.ticks = element_line(color =  line_colors),
+    axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0), color = line_colors),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), color = line_colors),
+    legend.position = &amp;quot;bottom&amp;quot;,
+    plot.margin = unit(c(0.5,1,0.5,0),&amp;quot;cm&amp;quot;),
+    strip.background = element_rect(fill = &amp;quot;white&amp;quot;, color = &amp;quot;black&amp;quot;)
+),
+  scale_color_manual(
+    values = plot_colors,
+    guide = guide_legend(direction = &amp;quot;horizontal&amp;quot;, label.hjust = 0.5, title.position = &amp;quot;top&amp;quot;,
+                              title.hjust = 0.5)),
+  scale_fill_manual(
+    values = plot_colors,
+    guide = guide_legend(direction = &amp;quot;horizontal&amp;quot;, label.hjust = 0.5, title.position = &amp;quot;top&amp;quot;,
+                              title.hjust = 0.5)))&lt;/code&gt;&lt;/pre&gt;
+&lt;h1 id=&#34;import-data-from-api&#34;&gt;Import Data from API&lt;/h1&gt;
+&lt;p&gt;Now, after setting everything up, we need to load the data. Since I got some additional data in &lt;code&gt;.csv&lt;/code&gt; format, the importing happens in two steps:&lt;/p&gt;
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;We import the data from 2017 and 2018 via the Munich Open Data API&lt;/li&gt;
+&lt;li&gt;We import the additional data from &lt;code&gt;.csv&lt;/code&gt; format&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;helper-functions&#34;&gt;Helper Functions&lt;/h2&gt;
+&lt;p&gt;To fetch the data via API, I wrote some helper functions. This functions will also help us with the preprocessing later. The functions can be found in the &lt;a href=&#34;https://github.com/Somtom/munich-bike-data-analysis&#34;&gt;Github project&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;fetch-data-from-api&#34;&gt;(1) Fetch Data from API&lt;/h2&gt;
+&lt;p&gt;The following chunks will import the data for the years 2017 and 2018 (until end of July):&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Import muc_opd helper functions
+# source(&amp;quot;./muc-opd-helper-functions.R&amp;quot;)
+
+bike_counter_resource_id &amp;lt;- &amp;quot;211e882d-fadd-468a-bf8a-0014ae65a393&amp;quot;
+resource_ids &amp;lt;- muc_odp_fetch_bike_count_resource_ids()
+
+resource_ids_15_min &amp;lt;- resource_ids$ids_15_min
+
+resource_ids_daily &amp;lt;- resource_ids$ids_daily&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bike_counter &amp;lt;- muc_odp_fetch_data(resource_id = bike_counter_resource_id, destination = &amp;quot;./data/&amp;quot;)
+
+bike_cnt_15_min &amp;lt;- bind_rows(
+  lapply(resource_ids_15_min$resource_id, function(x) muc_odp_fetch_data(resource_id = x,
+                                                             destination = &amp;quot;./data/15_min/&amp;quot;))
+)
+
+bike_cnt_day &amp;lt;-  bind_rows(
+  lapply(resource_ids_daily$resource_id, function(x) muc_odp_fetch_data(resource_id = x,
+                                                             destination = &amp;quot;./data/daily/&amp;quot;))
+)&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;add-additional-data&#34;&gt;(2) Add Additional Data&lt;/h2&gt;
+&lt;p&gt;Now we import the additional data from the &lt;code&gt;.csv&lt;/code&gt; files:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;files &amp;lt;- list.files(&amp;quot;./data/additional/&amp;quot;, full.names = TRUE, recursive = TRUE)
+files_15_min &amp;lt;- stringr::str_detect(files, &amp;quot;15Min&amp;quot;)
+
+suppressMessages({
+  additional_15_min_data &amp;lt;- bind_rows(lapply(files[files_15_min],
+                                           read_csv2, 
+                                           col_types = cols(.default = &amp;quot;c&amp;quot;)))
+additional_daily_data &amp;lt;- bind_rows(lapply(files[!files_15_min],
+                                          read_csv2,
+                                           col_types = cols(.default = &amp;quot;c&amp;quot;)))
+})
+
+
+# Change date column name to be equal to the API data
+names(additional_15_min_data)[1] &amp;lt;- &amp;quot;datum&amp;quot;
+names(additional_daily_data)[1] &amp;lt;- &amp;quot;datum&amp;quot;
+
+bike_cnt_day &amp;lt;- bind_rows(additional_daily_data, bike_cnt_day)
+bike_cnt_15_min &amp;lt;- bind_rows(additional_15_min_data, bike_cnt_15_min)&lt;/code&gt;&lt;/pre&gt;
+&lt;h1 id=&#34;preprocessing&#34;&gt;Preprocessing&lt;/h1&gt;
+&lt;p&gt;To prepare the data for the analysis we perform the following steps:&lt;/p&gt;
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;Convert data types (i.e. &lt;code&gt;character&lt;/code&gt; to &lt;code&gt;POSIXct&lt;/code&gt; for dates)&lt;/li&gt;
+&lt;li&gt;Gather the direction columns (&lt;code&gt;richtung_1&lt;/code&gt; and &lt;code&gt;richtung_2&lt;/code&gt;) into one &lt;code&gt;direction&lt;/code&gt; column and convert their names to &lt;code&gt;&#39;into center&#39;&lt;/code&gt; or &lt;code&gt;&#39;out of center&#39;&lt;/code&gt; according to their direction relatively to the city center&lt;br /&gt;
+&lt;/li&gt;
+&lt;li&gt;Extract &lt;code&gt;weekday&lt;/code&gt; information and add &lt;code&gt;weekend&lt;/code&gt; indicator column&lt;/li&gt;
+&lt;li&gt;Remove duplicates (caused by the additional data)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;convert-types&#34;&gt;(1) Convert Types&lt;/h2&gt;
+&lt;p&gt;After importing the data, we need to convert its datatypes to a format which we can work with. We use the predefined helper functions for that.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bike_counter &amp;lt;- muc_odp_convert_bike_counter_types(bike_counter)
+bike_cnt_15_min &amp;lt;- muc_odp_convert_bike_cnt_15_min_types(bike_cnt_15_min)
+bike_cnt_day &amp;lt;- muc_odp_convert_bike_cnt_day_types(bike_cnt_day)&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;add-directions-information&#34;&gt;(2) Add Directions Information&lt;/h2&gt;
+&lt;p&gt;All tables have two columns which are named &lt;code&gt;richtung_1&lt;/code&gt; and &lt;code&gt;richtung_2&lt;/code&gt;. These stand for the two different directions for which the stations measure the counts. In the &lt;code&gt;bike_counter&lt;/code&gt; table we can find a description which tells us whether the given direction for that station is &lt;code&gt;east&lt;/code&gt;, &lt;code&gt;weast&lt;/code&gt;, &lt;code&gt;north&lt;/code&gt; or &lt;code&gt;south&lt;/code&gt;. We are going to convert the directions to either &lt;code&gt;into center&lt;/code&gt; or &lt;code&gt;out of center&lt;/code&gt; in order to gain more detailed information. In another helper function I precoded this information with a mapping function.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bike_cnt_15_min &amp;lt;- muc_odp_add_direction_info(bike_cnt_15_min)
+bike_cnt_day &amp;lt;- muc_odp_add_direction_info(bike_cnt_day)
+bike_counter &amp;lt;- muc_odp_add_direction_info(bike_counter)&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;extract-time-from-uhrzeit_start-english-time-start-and-add-weekend-indicator-column&#34;&gt;(3) Extract Time from &lt;code&gt;uhrzeit_start&lt;/code&gt; (English: Time Start) and Add Weekend Indicator Column&lt;/h2&gt;
+&lt;p&gt;In our last preprocessing step we add a &lt;code&gt;time&lt;/code&gt; column to the 15 minutes table. This will hold the information on the &lt;em&gt;time of the day&lt;/em&gt;. Further, we add the &lt;code&gt;weekday&lt;/code&gt; as well as a indicator column which tells us whether the data were measured at the &lt;code&gt;weekend&lt;/code&gt; or during the week.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;weekend_days &amp;lt;- c(&amp;quot;Sat&amp;quot;, &amp;quot;Sun&amp;quot;)
+bike_cnt_15_min &amp;lt;- bike_cnt_15_min %&amp;gt;% 
+  mutate(time = as.numeric(uhrzeit_start - trunc(uhrzeit_start, &amp;quot;days&amp;quot;)),
+         weekday = wday(uhrzeit_start, label = TRUE, local = &amp;quot;us&amp;quot;),
+         weekend = factor(weekday %in% weekend_days)) 
+
+bike_cnt_day &amp;lt;- bike_cnt_day %&amp;gt;% 
+  mutate(weekday = factor(wday(datum, label = TRUE, local = &amp;quot;us&amp;quot;)),
+         weekend = factor(weekday %in% weekend_days))
+
+class(bike_cnt_15_min$time) &amp;lt;- &amp;quot;POSIXct&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;remove-duplicates-and-save-converted-data&#34;&gt;(4) Remove Duplicates and Save Converted Data&lt;/h2&gt;
+&lt;p&gt;Finally, we remove the duplicates from our data set and save the converted data.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bike_cnt_15_min &amp;lt;- unique(bike_cnt_15_min)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;saveRDS(bike_counter, &amp;quot;./2018-11-03-munich-bike-data-info-graphic_files/bike_counter_converted.RDS&amp;quot;)
+saveRDS(bike_cnt_15_min, &amp;quot;./2018-11-03-munich-bike-data-info-graphic_files/bike_cnt_15_min_converted.RDS&amp;quot;)
+saveRDS(bike_cnt_day, &amp;quot;./2018-11-03-munich-bike-data-info-graphic_files/bike_cnt_day_converted.RDS&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;h1 id=&#34;analysis&#34;&gt;Analysis&lt;/h1&gt;
+&lt;p&gt;Now that we are done with preprocessing, we can start with our analysis.&lt;/p&gt;
+&lt;h2 id=&#34;time-period-of-our-data-set&#34;&gt;Time Period of Our Data Set&lt;/h2&gt;
+&lt;p&gt;First, lets have a look at the time period we are analyzing:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;cat(paste0(
+  &amp;#39;## 15 Minute Data ##&amp;#39;,
+  &amp;#39;\nStart:\t&amp;#39;, min(bike_cnt_15_min$datum),
+  &amp;#39;\nEnd:\t&amp;#39;, max(bike_cnt_15_min$datum), 
+  &amp;#39;\n\n## Daily Data ##&amp;#39;,
+  &amp;#39;\nStart:\t&amp;#39;, min(bike_cnt_day$datum),
+  &amp;#39;\nEnd:\t&amp;#39;, max(bike_cnt_day$datum)))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## ## 15 Minute Data ##
+## Start:   2008-06-01
+## End: 2018-07-31
+## 
+## ## Daily Data ##
+## Start:   2008-06-01
+## End: 2018-07-31&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;missing-data&#34;&gt;Missing Data&lt;/h2&gt;
+&lt;p&gt;Very important for every analysis is to be aware of missing data. So let’s have a look at our data:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bike_cnt_day %&amp;gt;% 
+  map(function(x) sum(is.na(x))) %&amp;gt;% 
+  bind_cols %&amp;gt;%
+  melt(value.name = &amp;quot;na_count&amp;quot;, variable.name = &amp;quot;column&amp;quot;) %&amp;gt;% 
+  filter(na_count &amp;gt; 0) %&amp;gt;% knitr::kable(digits = 2)&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;column&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;na_count&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;bewoelkung&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;25308&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;sonnenstunden&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;25308&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;niederschlag&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;25308&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;max_temp&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;25308&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;min_temp&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;25308&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;id&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;37512&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;We see that some weather data and ids are missing for the &lt;code&gt;bike_cnt_day&lt;/code&gt; table. These missing values are all from our additional data. Important is that we need to take this into account when we draw conclusions later.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bike_cnt_15_min %&amp;gt;% 
+  map(function(x) sum(is.na(x))) %&amp;gt;% 
+  bind_cols %&amp;gt;%
+  melt(value.name = &amp;quot;na_count&amp;quot;, variable.name = &amp;quot;column&amp;quot;) %&amp;gt;% 
+  filter(na_count &amp;gt; 0) %&amp;gt;% dim()&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] 0 2&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;No data are missing for &lt;code&gt;bike_cnt_15_min&lt;/code&gt; table.&lt;/p&gt;
+&lt;h2 id=&#34;station_map&#34;&gt;Map of Stations&lt;/h2&gt;
+&lt;p&gt;To get a first overview of the locations of the 6 counting stations, we create a map of Munich using the &lt;code&gt;ggmap&lt;/code&gt; package and add markers for each station.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;area &amp;lt;- make_bbox(lon = longitude, lat = latitude, data = bike_counter)
+area &amp;lt;- area + c(-0.02, -0.01, 0.01, 0.01)
+
+suppressMessages({area_map &amp;lt;- get_map(area,  source = &amp;quot;stamen&amp;quot;)})
+
+ggmap(area_map, extend = &amp;quot;device&amp;quot;, darken = 0.3,
+      base_layer = ggplot(aes(x = longitude, y = latitude), data = bike_counter)) +
+  geom_point(shape = 21, size = 4, fill = plot_colors[1]) +
+  geom_text(aes(label = zaehlstelle), vjust = -1, color = &amp;quot;white&amp;quot;) +
+  theme_void()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-11-03-munich-bike-data-info-graphic_files/figure-html/map-1.png&#34; width=&#34;576&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The stations are spread across Munich. Their locations were planned to be as different as possible but also representative for typical traffic situations (&lt;em&gt;Zorn et. al 2011&lt;/em&gt;).&lt;/p&gt;
+&lt;h2 id=&#34;compare-the-data-of-all-stations&#34;&gt;Compare the Data of All Stations&lt;/h2&gt;
+&lt;h3 id=&#34;average_counts&#34;&gt;What Are Average 15 Minute and Daily Counts?&lt;/h3&gt;
+&lt;p&gt;Now that we have a bird’s eye view on the locations, let’s get an overview on the data by looking at summary stats like average, median and others. First, we start with a summary across all stations. For this purpose we use the &lt;code&gt;summary()&lt;/code&gt; function combined with &lt;code&gt;tidy()&lt;/code&gt; from the &lt;code&gt;broom&lt;/code&gt; package to get everything in one table.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bind_rows(
+  c(
+    table = &amp;quot;bike_cnt_day&amp;quot;,
+    broom::tidy(summary(bike_cnt_day$gesamt)), 
+    sd = sd(bike_cnt_day$gesamt)),
+  c(
+    table = &amp;quot;bike_cnt_15_min&amp;quot;, 
+    broom::tidy(summary(bike_cnt_15_min$gesamt)),
+    sd = sd(bike_cnt_15_min$gesamt)))  %&amp;gt;% knitr::kable(digits = 2)&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;table&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;minimum&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;q1&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;median&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;mean&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;q3&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;maximum&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;sd&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;bike_cnt_day&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;305&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;862&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1352.91&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1916&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;15009&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1471.79&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;bike_cnt_15_min&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;-2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;13.86&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;17&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1157&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;23.43&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;On average the stations count &lt;strong&gt;14 bike per 15 minutes&lt;/strong&gt; and &lt;strong&gt;1353 bikes per day&lt;/strong&gt;. When we have a look at the maxima, we see that they are quiet high compared to the means. Especially the 15 minute count maximum is &lt;strong&gt;83&lt;/strong&gt; times as high as the mean. We might find some interesting events being represented by these high counts but we will dive deeper into that later.&lt;/p&gt;
+&lt;p&gt;How does the summary data differ if we calculate it per station? We first start with the 15 minute data. To compare the stations we additionally calculate a &lt;code&gt;scaled_median_count&lt;/code&gt; which is the median for a single station divided by the minimum of all station medians.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;station_summary_15_min &amp;lt;- bike_cnt_15_min %&amp;gt;% 
+  spread(key = direction, value = count) %&amp;gt;% 
+  group_by(zaehlstelle) %&amp;gt;% 
+  summarise(avg = round(mean(gesamt, na.rm = T)),
+            median_count = median(gesamt, na.rm = T),
+            q1 = quantile(gesamt, 0.25, na.rm = T),
+            q3 = quantile(gesamt, 0.75, na.rm = T),
+            sd = sd(gesamt, na.rm = T),
+            percent_sd = round(sd/median_count * 100, 2)) %&amp;gt;% 
+  ungroup() %&amp;gt;% 
+  mutate(scaled_median_count = round(median_count / min(median_count))) %&amp;gt;% 
+  arrange(desc(median_count)) 
+
+station_summary_15_min  %&amp;gt;% knitr::kable(digits = 2)&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;zaehlstelle&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;avg&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;median_count&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;q1&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;q3&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;sd&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;percent_sd&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;scaled_median_count&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Erhardt&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;34&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;19&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;5&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;50&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;40.17&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;211.42&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;19&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Margareten&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;25&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;15&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;39&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;26.98&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;179.87&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;15&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Arnulf&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;11&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;6&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;16&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;14.39&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;239.76&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;6&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Olympia&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;14&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;5&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;20&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;20.61&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;412.13&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;5&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Hirsch&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;6&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;8&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;10.68&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1068.43&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Kreuther&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;4.82&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;482.46&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;As we see, Erhardt is the station with the highest median 15 minute count (19 bikes). Its median is 19 times higher than the one of Kreuther. Nevertheless, the standard deviation is very high across all stations, which is an indicator for a lot of intra day deviation.&lt;/p&gt;
+&lt;p&gt;How does the per station summary look like for the daily counts?&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;station_summary_day &amp;lt;- bike_cnt_day %&amp;gt;% 
+  spread(key = direction, value = count) %&amp;gt;% 
+  group_by(zaehlstelle) %&amp;gt;% 
+  summarise(avg = round(mean(gesamt)),
+            median_count = median(gesamt),
+            q1 = quantile(gesamt, 0.25),
+            q3 = quantile(gesamt, 0.75),
+            sd = sd(gesamt),
+            percent_sd = round(sd/median_count * 100,2)) %&amp;gt;% 
+  ungroup() %&amp;gt;% 
+  mutate(scaled_median_count = round(median_count / min(median_count))) %&amp;gt;% 
+  arrange(desc(median_count)) 
+
+station_summary_day  %&amp;gt;% knitr::kable(digits = 2)&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;zaehlstelle&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;avg&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;median_count&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;q1&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;q3&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;sd&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;percent_sd&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;scaled_median_count&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Erhardt&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3291&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2862.0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1646.00&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;4725.00&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2080.50&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;72.69&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;13&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Margareten&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2385&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2322.0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1340.00&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3277.00&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1307.51&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;56.31&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;10&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Olympia&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1332&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1156.0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;543.50&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1891.00&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1077.79&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;93.23&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;5&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Arnulf&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1050&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;896.5&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;474.25&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1412.75&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;792.05&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;88.35&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;4&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Hirsch&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;615&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;488.5&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;141.25&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;903.75&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;590.32&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;120.84&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Kreuther&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;283&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;223.0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;89.00&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;400.00&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;252.36&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;113.17&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;We see a similar picture compared to the 15 minute data. With a median daily bike count of 2862, station Erhardt has the highest daily counts, too. This time the count is 13 higher than the count of Kreuther.&lt;/p&gt;
+&lt;h3 id=&#34;wrong_direction&#34;&gt;How Many People Are Riding in the Wrong Direction at Arnulf Street?&lt;/h3&gt;
+&lt;p&gt;Station &lt;strong&gt;Arnulf Street&lt;/strong&gt; has a special characteristic: The counter is located on a one way bicycle lane. Thus, normally it should only measure counts for one direction, which is into city center.&lt;/p&gt;
+&lt;p&gt;Luckily it is also able to count all bikers who ride into the wrong direction, which we can use for our analysis. So let’s find out which share of the total counts is due to bikers riding the wrong direction.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;wrong_way_drivers &amp;lt;- bike_cnt_day %&amp;gt;% 
+  filter(zaehlstelle == &amp;quot;Arnulf&amp;quot;) %&amp;gt;%
+  filter(direction == &amp;quot;out of center&amp;quot;) %&amp;gt;%
+  mutate(share = round(count / gesamt * 100, 2)) %&amp;gt;% 
+  select(share) %&amp;gt;% unlist() %&amp;gt;% summary() %&amp;gt;% tidy()
+wrong_way_drivers  %&amp;gt;% knitr::kable(digits = 2)&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;right&#34;&gt;minimum&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;q1&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;median&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;mean&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;q3&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;maximum&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;na&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3.91&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;5.1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;5.8&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;6.68&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;100&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;101&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;The data suggests that on average &lt;strong&gt;5.8 percent&lt;/strong&gt; of daily counted bikes at Arnulf Street were driving on the &lt;strong&gt;wrong side of the road&lt;/strong&gt;. Interestingly, there must have been at least one day where all bikes were riding on the wrong side of the road since we observed a maximum of 100%.&lt;/p&gt;
+&lt;h2 id=&#34;count_records&#34;&gt;Count Records&lt;/h2&gt;
+&lt;p&gt;Now it is time to come back to the maximum counts we recognized earlier. To get a quick overview before we dive into the story behind some maximum counts, let’s create a top 10 list for both the daily and the 15 minute counts:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Daily Counts
+top_10_day &amp;lt;- bike_cnt_day %&amp;gt;% 
+  spread(key = direction, value = count) %&amp;gt;% 
+  arrange(desc(gesamt)) %&amp;gt;% 
+  head(10)
+
+top_10_day %&amp;gt;% 
+  select(datum, gesamt, zaehlstelle) %&amp;gt;% 
+  knitr::kable(digits = 2)&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;datum&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;gesamt&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;zaehlstelle&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2012-06-09&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;15009&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Olympia&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2010-06-26&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;14714&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Olympia&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2010-06-27&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;12241&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Olympia&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2013-06-19&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9296&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Erhardt&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2018-07-26&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9228&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Erhardt&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2017-07-05&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9207&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Erhardt&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2018-07-24&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9179&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Erhardt&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2016-06-23&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9113&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Erhardt&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2016-07-20&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9106&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Erhardt&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2018-06-20&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;9106&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Erhardt&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;That is interesting: Station Olympia takes the top 3 places with counts above 10 thousand, although it only made the third place when we calculated the median counts per station earlier. After some research I found out that these top 3 counts were caused by the same event, namely the &lt;strong&gt;24h Mountainbike Race&lt;/strong&gt;, which takes place in Olympia Park every year. Since the route is changed from year to year, the counting station is not always on the track. Thus, we don’t see these record counts every year.&lt;/p&gt;
+&lt;p&gt;Let’s plot the 15 minute data for the events in the two years in which we observed these high counts:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-11-03-munich-bike-data-info-graphic_files/figure-html/plot_mtb_race-1.png&#34; width=&#34;960&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;img src=&#34;/post/2018-11-03-munich-bike-data-info-graphic_files/figure-html/plot_mtb_race-2.png&#34; width=&#34;960&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Now we also create a top 10 list for the 15 minute counts:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# 15 Minute Counts
+top_10_15_min &amp;lt;- bike_cnt_15_min %&amp;gt;% 
+  spread(key = direction, value = count) %&amp;gt;% 
+  arrange(desc(gesamt)) %&amp;gt;% 
+  head(10)
+
+top_10_15_min  %&amp;gt;% 
+  select(datum, gesamt, uhrzeit_start, zaehlstelle) %&amp;gt;% knitr::kable(digits = 2)&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;datum&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;gesamt&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;uhrzeit_start&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;zaehlstelle&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2017-09-03&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1157&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;2017-09-03 13:45:00&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Olympia&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2017-09-03&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;945&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;2017-09-03 14:00:00&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Olympia&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2015-05-10&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;540&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;2015-05-10 12:30:00&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Olympia&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2015-05-10&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;503&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;2015-05-10 12:15:00&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Olympia&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2015-05-10&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;455&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;2015-05-10 12:45:00&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Olympia&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2016-10-16&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;421&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;2016-10-16 13:45:00&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Olympia&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2016-10-16&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;409&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;2016-10-16 14:00:00&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Olympia&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2015-05-10&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;385&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;2015-05-10 12:00:00&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Olympia&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2012-06-09&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;365&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;2012-06-09 23:00:00&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Olympia&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2015-05-10&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;363&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;2015-05-10 14:45:00&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Olympia&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;If we have a closer look, we only can find one of our daily count top 10 candidates in this list, namely the &lt;strong&gt;2017-06-09&lt;/strong&gt; on the 6th place. Normally you would suppose the date with highest 15 minute counts to also be listed in the daily count top 10 unless the high counts were due to a short time event. So what happened on the 3rd September 2017 when a 15 minute bike count of &lt;strong&gt;1157&lt;/strong&gt; was recorded?&lt;/p&gt;
+&lt;p&gt;This picture from &lt;a href=&#34;https://radlhauptstadt.muenchen.de/&#34;&gt;radlhaupstadt.muenchen.de&lt;/a&gt; gives you a hint:&lt;/p&gt;
+&lt;div class=&#34;figure&#34;&gt;
+&lt;img src=&#34;/rmarkdown-libs/img/ringparade.jpg&#34; alt=&#34;Picture source: radlhauptstadt.muenchen.de&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;Picture source: radlhauptstadt.muenchen.de&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;On that day the so called &lt;a href=&#34;https://radlhauptstadt.muenchen.de/mitradeln/muenchner-ringparade/&#34;&gt;Münchner Ringparade&lt;/a&gt; took place. At this event the Munich beltway had been closed temporarily for car traffic while round about 7000 people used this route for a bike tour. The 12 km tour ended in Olympia Park. And this is exactly what we can see in the data:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-11-03-munich-bike-data-info-graphic_files/figure-html/olympia_record_plot-1.png&#34; width=&#34;960&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;h2 id=&#34;bike_times&#34;&gt;When Are Most People Biking?&lt;/h2&gt;
+&lt;h3 id=&#34;pattern-across-a-year&#34;&gt;Pattern Across a Year&lt;/h3&gt;
+&lt;p&gt;To answer this question we first try to gain an overview by plotting the development of the daily counts over the years&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-11-03-munich-bike-data-info-graphic_files/figure-html/daily_count_over_years-1.png&#34; width=&#34;864&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;There is definitely a clear seasonal pattern which is similar across all stations. As one would expect, there are higher bike counts during the summer months and lower counts during winter months. However, we also see individual trends or characteristics for some stations:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Station &lt;strong&gt;Hirsch&lt;/strong&gt; shows a ongoing trend of rising bike counts from year to year&lt;/li&gt;
+&lt;li&gt;At &lt;strong&gt;Arnulf Street’s&lt;/strong&gt; counting station one can see two peak years in 2013 and 2014. These peaks could be due to a railway construction site which affected parts of the trains going into city center.&lt;/li&gt;
+&lt;li&gt;Station &lt;strong&gt;Kreuther&lt;/strong&gt; showed some high counts at the beginning of 2013 and then no data for the rest of the year. Here the counting station was affected by a construction site when a separate bicycle path was created. After that, bikes on the sidewalk were not counted anymore. This is why daily bike count level dropped afterwards.&lt;/li&gt;
+&lt;li&gt;One can clearly see the events taking place in &lt;strong&gt;Olympia Park&lt;/strong&gt; represented by peaks in the data&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;When we plot the bike count distribution for each month, we see that &lt;strong&gt;highest median bike counts occur in the month July&lt;/strong&gt;. However, the maximum counts had been recorded in June. These are due to some of the record events mentioned earlier, though. Thus, they need to be interpreted as outliers&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-11-03-munich-bike-data-info-graphic_files/figure-html/daily_count_month_wise_distribution-1.png&#34; width=&#34;960&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;h3 id=&#34;day-of-the-week&#34;&gt;Day of the Week&lt;/h3&gt;
+&lt;p&gt;When we look at the distribution of total daily counts, we see that counts &lt;strong&gt;during the week&lt;/strong&gt; are &lt;strong&gt;higher than those at the weekends&lt;/strong&gt;. This is most likely due to commuting traffic, which we will try to model later. The maximum counts occurred on Saturdays but are due to single events like the 24h Mountain-bike race we saw earlier.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-11-03-munich-bike-data-info-graphic_files/figure-html/bike_count_distribution_week-1.png&#34; width=&#34;960&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;h3 id=&#34;temperature-and-weather-on-days-with-maximum-counts&#34;&gt;Temperature and Weather on Days with Maximum Counts&lt;/h3&gt;
+&lt;p&gt;Now we use the weather data we have (at least for the days where they are not missing) and try to characterize the days with highest bike counts. We look at the distribution of measured values within each weather variable &lt;strong&gt;for the month July&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;To do so we group the bike counts into 4 categories:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Lowest 25%:&lt;/strong&gt; Daily bike counts which lie between the &lt;strong&gt;minimum&lt;/strong&gt; count and the &lt;strong&gt;25% percentile&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Lower Middle:&lt;/strong&gt; Daily bike counts which lie between the &lt;strong&gt;25% percentile&lt;/strong&gt; and the &lt;strong&gt;median&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Upper Middle:&lt;/strong&gt; Daily bike counts which lie between the &lt;strong&gt;median&lt;/strong&gt; and the &lt;strong&gt;75% percentile&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Highest 25%:&lt;/strong&gt; Daily bike counts which lie between the &lt;strong&gt;75% percentile&lt;/strong&gt; and the &lt;strong&gt;maximum&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We then will have a closer look into the &lt;strong&gt;“Highest 25%”&lt;/strong&gt; group and the weather parameters measured on these days.&lt;/p&gt;
+&lt;p&gt;To make the data comparable between stations, we perform the following steps:&lt;/p&gt;
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;Removing outliers by filtering for bike counts below the 99% percentile for each station&lt;br /&gt;
+&lt;/li&gt;
+&lt;li&gt;Scaling the daily counts from each station by dividing the counts by each station’s maximum count&lt;br /&gt;
+&lt;/li&gt;
+&lt;li&gt;Using the scaled counts (values between 0 and 1) to assign bike count categories&lt;/li&gt;
+&lt;/ol&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;breaks &amp;lt;- bike_cnt_day %&amp;gt;% 
+  filter(month(datum) == 7) %&amp;gt;% 
+  spread(key = direction, value = count) %&amp;gt;%
+  group_by(zaehlstelle) %&amp;gt;% 
+  # Calculate 99% percentile per station in order to filter outlieres 
+  mutate(percentile_99 = quantile(gesamt, 0.99))  %&amp;gt;%
+  filter(gesamt &amp;lt; percentile_99) %&amp;gt;% 
+  # Scale to make compareable across stations
+  mutate(gesamt_scaled = gesamt / max(gesamt)) %&amp;gt;% 
+  ungroup() %&amp;gt;% 
+  # Create count classes
+  summarise(count_q1 = quantile(gesamt_scaled, 0.25),
+         count_q2 = quantile(gesamt_scaled, 0.5),
+         count_q3 = quantile(gesamt_scaled, 0.75),
+         max_count = max(gesamt_scaled)) %&amp;gt;% unlist()
+
+labels &amp;lt;- c(&amp;quot;Lowest 25%\n[0-q1]&amp;quot;, 
+            &amp;quot;Lower Middle\n(q1-q2]&amp;quot;,
+            &amp;quot;Upper Middle\n(q2-q3]&amp;quot;, 
+            &amp;quot;Highest 25%\n(q3-max]&amp;quot;)
+
+bike_cnt_day_july_scaled &amp;lt;- bike_cnt_day %&amp;gt;% 
+  filter(month(datum) == 7) %&amp;gt;% 
+  spread(key = direction, value = count) %&amp;gt;%
+  group_by(zaehlstelle) %&amp;gt;% 
+  # Calculate 99% percentile per station in order to filter outlieres 
+  mutate(percentile_99 = quantile(gesamt, 0.99))  %&amp;gt;%
+  filter(gesamt &amp;lt; percentile_99) %&amp;gt;% 
+  # Scale to make compareable across stations
+  mutate(gesamt_scaled = gesamt / max(gesamt)) %&amp;gt;% 
+  ungroup() %&amp;gt;% 
+  mutate(cat = cut(gesamt_scaled, breaks = c(0, breaks), include.lowest = T, labels = labels)) %&amp;gt;%
+  select(cat, bewoelkung, sonnenstunden, niederschlag, max_temp, min_temp)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-11-03-munich-bike-data-info-graphic_files/figure-html/temperature_and_weather_distribution_for_maximum_days-1.png&#34; width=&#34;960&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;When we look at each weather parameter, we can see differences in value distributions between the 4 bike count categories. However these differences are not always that clear. But, there are at least trends for all parameters except one, namely the minimum temperature, where mostly the variance differs. The other parameters don’t show great surprises: You would, for example, expect the precipitation to be very low on days with a lot of bikes being counted.&lt;/p&gt;
+&lt;p&gt;In order to get some numbers to describe the days with highest counts, let’s look into a summary for each weather category at days with bike counts within the “Highest 25%” group in July.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;get_mode &amp;lt;- function(x) {
+  ux &amp;lt;- na.omit(unique(x))
+  tab &amp;lt;- tabulate(match(x, ux))
+  ux[tab == max(tab)][1]
+}
+
+# Characterise the metrics for the maximum category within july
+bike_cnt_day_july_scaled %&amp;gt;% 
+  group_by(cat) %&amp;gt;% 
+  summarise(max_temp = list(cbind(broom::glance(summary(max_temp)), mode = get_mode(max_temp))),
+            min_temp = list(cbind(broom::glance(summary(min_temp)), mode = get_mode(min_temp))),
+            bewoelkung = list(cbind(broom::glance(summary(bewoelkung)), mode = get_mode(bewoelkung))),
+            sonnenstunden = list(cbind(broom::glance(summary(sonnenstunden)), mode = get_mode(sonnenstunden))),
+            niederschlag = list(cbind(broom::glance(summary(niederschlag)), mode = get_mode(niederschlag)))) %&amp;gt;%
+  gather(key = metric, value = value, -cat)  %&amp;gt;% 
+  unnest() %&amp;gt;%   
+  filter(cat == &amp;quot;Highest 25%\n(q3-max]&amp;quot;) %&amp;gt;% mutate(metric = plyr::revalue(metric, 
+                                c(&amp;quot;bewoelkung&amp;quot; = &amp;quot;Cloudiness [%]&amp;quot;,
+                                  &amp;quot;max_temp&amp;quot; = &amp;quot;Maximum Temperature [°C]&amp;quot;,
+                                  &amp;quot;min_temp&amp;quot; = &amp;quot;Minimum Temperature [°C]&amp;quot;,
+                                  &amp;quot;niederschlag&amp;quot; = &amp;quot;Precipitation  [ml]&amp;quot;,
+                                  &amp;quot;sonnenstunden&amp;quot; = &amp;quot;Hours of Sunshine [h]&amp;quot;))) %&amp;gt;% 
+  select(-na, -cat)  %&amp;gt;% knitr::kable(digits = 2)&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;metric&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;minimum&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;q1&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;median&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;mean&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;q3&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;maximum&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;mode&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Maximum Temperature [°C]&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;19.8&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;26.0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;28.2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;28.24&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;30.6&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;36.9&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;28.2&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Minimum Temperature [°C]&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;10.3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;13.7&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;15.7&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;15.62&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;17.4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;21.5&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;17.5&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Cloudiness [%]&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;19.0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;40.0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;43.73&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;71.0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;95.0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;75.0&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Hours of Sunshine [h]&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2.8&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;8.1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;12.0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;10.89&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;13.4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;15.6&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;14.3&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Precipitation [ml]&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.05&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;16.9&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.0&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Great! We can take these median values for the info-graphic to give a statement for a typical biking day:&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Days with highest counts lie in &lt;strong&gt;July&lt;/strong&gt;. The temperature on these days is &lt;strong&gt;15.7 - 28.2°C&lt;/strong&gt; and the &lt;strong&gt;sun&lt;/strong&gt; is shining for &lt;strong&gt;12 hours&lt;/strong&gt; with &lt;strong&gt;scattered clouds&lt;/strong&gt; but &lt;strong&gt;without&lt;/strong&gt; any &lt;strong&gt;precipitation.&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;h2 id=&#34;commuting&#34;&gt;Modeling Commuting Traffic&lt;/h2&gt;
+&lt;h3 id=&#34;differences-between-weekend-counts-and-counts-during-week&#34;&gt;Differences Between Weekend Counts and Counts During Week&lt;/h3&gt;
+&lt;p&gt;We already got some nice information about the bike traffic in Munich. Our next aim is to use the 15 minute data to model the commuting traffic. We start with a bird’s eye overview by plotting the median 15 minute counts across all stations for weekend and working days.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-11-03-munich-bike-data-info-graphic_files/figure-html/15_min_plot_weekend_week-1.png&#34; width=&#34;960&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We can see that the 15 minute count patterns clearly differ between weekend days and week days. There are two clear commuting peaks during the week. However, there still seems to be regular traffic between these peaks.&lt;br /&gt;
+We used the median 15 minute bike count across all stations for the previous plot. But, will we still see the same pattern if we look at each station separately?&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-11-03-munich-bike-data-info-graphic_files/figure-html/15_min_plot_weekend_week_per_station-1.png&#34; width=&#34;1248&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Indeed, the pattern is similar across all stations. Nevertheless, stations show different commuting direction characteristics. The stations can be assigned to either one of these 3 groups:&lt;/p&gt;
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;Station with traffic mainly in the direction of the city center in the morning and back way in the afternoon:
+&lt;ul&gt;
+&lt;li&gt;Erhardt&lt;/li&gt;
+&lt;li&gt;Hirsch&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Stations with traffic mainly out of the city center in the morning and back in the afternoon
+&lt;ul&gt;
+&lt;li&gt;Kreuther&lt;/li&gt;
+&lt;li&gt;Margareten&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Stations with similar patterns for traffic into- and out of city center
+&lt;ul&gt;
+&lt;li&gt;Olympia&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;We cannot really tell for Arnulf Street but it looks like the peaks in the morning and in the afternoon are similar for the only measured direction (into center). This would make it fall into class 3.&lt;/p&gt;
+&lt;h3 id=&#34;the-model&#34;&gt;The Model&lt;/h3&gt;
+&lt;p&gt;To create a really basic model of the commuting traffic, we make the following assumption: &lt;em&gt;Traffic during week is the result of commuting traffic and the normal traffic which is represented by the weekend data.&lt;/em&gt; Under this assumption subtracting the 15 minute weekend counts from the 15 minute counts during the week gives us the commuting part. We are going to create a &lt;code&gt;loess&lt;/code&gt; model for each the weekend and the week counts for that purpose.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bike_cnt_15_min_separated &amp;lt;- bike_cnt_15_min %&amp;gt;% 
+  mutate(Weekend = factor(ifelse(weekend == TRUE, &amp;quot;Weekend&amp;quot;, &amp;quot;Week&amp;quot;))) %&amp;gt;% 
+  group_by(Weekend, time) %&amp;gt;% 
+  summarise(median = median(gesamt)) %&amp;gt;% 
+  spread(key = Weekend, value = median) %&amp;gt;% 
+  mutate(Commuting = Week - Weekend) %&amp;gt;% 
+  gather(key = week_cat, value = median_count, Commuting, Weekend, Week) %&amp;gt;% 
+  mutate(week_cat = factor(week_cat, levels = c(&amp;quot;Weekend&amp;quot;, &amp;quot;Week&amp;quot;, &amp;quot;Commuting&amp;quot;)),
+         commuting_cat = factor(ifelse(week_cat == &amp;quot;Commuting&amp;quot;,
+                                       &amp;quot;Commuting Traffic&amp;quot;,
+                                       &amp;quot;Normal Traffic&amp;quot;),
+                                levels = c(&amp;quot;Normal Traffic&amp;quot;, &amp;quot;Commuting Traffic&amp;quot;))) 
+
+tmp &amp;lt;- bike_cnt_15_min_separated %&amp;gt;% 
+  mutate(median_count = ifelse(median_count &amp;lt; 0, 0, median_count),
+         x = as.numeric(time)) 
+
+fit_commuting &amp;lt;- loess(median_count~x, data = tmp, subset = c(tmp$week_cat == &amp;quot;Commuting&amp;quot;), span = 0.2)
+fit_weekend &amp;lt;- loess(median_count~x, data = tmp, subset = c(tmp$week_cat == &amp;quot;Weekend&amp;quot;), span = 0.2)
+fit_week &amp;lt;- loess(median_count~x, data = tmp, subset = c(tmp$week_cat == &amp;quot;Week&amp;quot;), span = 0.2)
+
+bike_cnt_15_min_modeled &amp;lt;- data.frame(x = seq(min(tmp$x), max(tmp$x)), 60) %&amp;gt;% 
+  add_predictions(fit_commuting, &amp;quot;pred_commuting&amp;quot;) %&amp;gt;%
+  add_predictions(fit_weekend, var = &amp;quot;pred_weekend&amp;quot;) %&amp;gt;% 
+  add_predictions(fit_week, var = &amp;quot;pred_week&amp;quot;) %&amp;gt;%
+  # Adjust for 0 values
+  mutate(time = as.POSIXct(x, origin = min(tmp$time)),
+         afternoon = x &amp;gt; 43200,
+         pred_commuting = ifelse(pred_commuting &amp;lt; 0, 0, pred_commuting),
+         pred_weekend = ifelse(pred_weekend &amp;lt; 0, 0, pred_weekend),
+         pred_week = ifelse(pred_week &amp;lt; 0, 0, pred_week)) &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-11-03-munich-bike-data-info-graphic_files/figure-html/commuting_model_plot-1.png&#34; width=&#34;960&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;When we use this modeling approach, the predicted commuting traffic would look like this:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-11-03-munich-bike-data-info-graphic_files/figure-html/commuting_week_and_weekend_plot-1.png&#34; width=&#34;768&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The result looks quiet good. We are able to see the two peaks, one in the morning and another one in the afternoon.&lt;/p&gt;
+&lt;h3 id=&#34;peak-commuting-times-according-to-model&#34;&gt;Peak Commuting Times According to Model&lt;/h3&gt;
+&lt;p&gt;Now, that we have a model for commuting traffic, when are the peak times?&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;morning &amp;lt;- bike_cnt_15_min_modeled %&amp;gt;% filter(!afternoon)
+afternoon &amp;lt;- bike_cnt_15_min_modeled %&amp;gt;% filter(afternoon)
+# Morning Peak
+morning_peak &amp;lt;- lubridate::with_tz(morning[which.max(morning$pred_commuting), ]$time, &amp;quot;UTC&amp;quot;)
+cat(paste0(&amp;quot;Morning peak:\n&amp;quot;, format(morning_peak, &amp;quot;%H:%M:%S&amp;quot;)))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Morning peak:
+## 08:03:27&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Afternoon Peak
+afternoon_peak &amp;lt;- lubridate::with_tz(afternoon[which.max(afternoon$pred_commuting), ]$time, &amp;quot;UTC&amp;quot;)
+cat(paste0(&amp;quot;Afternoon peak:\n&amp;quot;, format(afternoon_peak, &amp;quot;%H:%M:%S&amp;quot;)))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Afternoon peak:
+## 17:54:48&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;time_diff &amp;lt;- difftime(afternoon_peak,
+                      morning_peak, units = &amp;quot;hours&amp;quot;, tz = &amp;quot;UTC&amp;quot;)
+
+hours &amp;lt;- floor((time_diff))
+mins &amp;lt;- floor(as.numeric(time_diff - hours, units = &amp;quot;mins&amp;quot;))
+secs &amp;lt;- as.numeric(time_diff - hours, units = &amp;quot;secs&amp;quot;) - mins * 60
+
+peak_to_peak_duration &amp;lt;- paste0(hours, &amp;quot;h &amp;quot;, mins, &amp;quot;min &amp;quot;, round(secs), &amp;quot;sec&amp;quot;)
+cat(paste0(&amp;quot;Peak to peak duration:\n&amp;quot;, peak_to_peak_duration))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Peak to peak duration:
+## 9h 51min 21sec&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The morning peak is around 08:03:27 and the afternoon commuting peak is around 17:54:48. The peak to peak duration is 9h 51min 21sec.&lt;/p&gt;
+&lt;p&gt;Let’s go on and compare the two peak times a little bit further. When I was looking for a way to characterize the duration of a peak, I found a metric called &lt;a href=&#34;https://en.wikipedia.org/wiki/Full_width_at_half_maximum&#34;&gt;Full Duration Half Maximum (FDHM)&lt;/a&gt;. It measures the duration between the points of y axis that are half the maximum amplitude.&lt;/p&gt;
+&lt;p&gt;We use this method for our data to get a FDHM for both peaks&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;calculate_FDHM_stats &amp;lt;- function(y, time, period_start, period_end) {
+  period_filter &amp;lt;-  time &amp;gt;= period_start &amp;amp; time &amp;lt;= period_end
+  y &amp;lt;- subset(y, period_filter)
+  time &amp;lt;- subset(time, period_filter)
+  max_y &amp;lt;- max(y)
+  
+  # Calculate index of intersection points of max_y/2 and y within period
+  i &amp;lt;- c(FALSE, diff(max_y/2 &amp;gt; y) != 0)
+  times &amp;lt;- time[i]
+  y_vals &amp;lt;- y[i]
+  
+  list(
+    times = times,
+    y_vals = y_vals,
+    max_y = max_y,
+    max_y_x_val = time[which.max(y)],
+    fdhm = round(difftime(times[2], times[1], units = &amp;quot;mins&amp;quot;))
+  )
+}
+
+day_start &amp;lt;- as.POSIXct(&amp;quot;1970-01-01 00:00:00&amp;quot;)
+noon &amp;lt;- as.POSIXct(&amp;quot;1970-01-01 12:00:00&amp;quot;)
+day_end &amp;lt;- as.POSIXct(&amp;quot;1970-01-01 23:59:59&amp;quot;)
+
+fdhm_stats_morning &amp;lt;- calculate_FDHM_stats(bike_cnt_15_min_modeled$pred_commuting,
+                     bike_cnt_15_min_modeled$time,
+                     day_start,
+                     noon)
+fdhm_stats_afternoon &amp;lt;- calculate_FDHM_stats(bike_cnt_15_min_modeled$pred_commuting,
+                     bike_cnt_15_min_modeled$time,
+                     noon,
+                     day_end)
+
+cat(paste0(&amp;quot;Morning FDHM: \n&amp;quot;, fdhm_stats_morning$fdhm, &amp;quot; Minutes\n&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Morning FDHM: 
+## 140 Minutes&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;cat(paste0(&amp;quot;Afternoon FDHM: \n&amp;quot;, fdhm_stats_afternoon$fdhm, &amp;quot; Minutes\n&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Afternoon FDHM: 
+## 197 Minutes&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;cat(paste0(&amp;quot;Afternoon FDHM is &amp;quot;, fdhm_stats_afternoon$fdhm - fdhm_stats_morning$fdhm,
+           &amp;quot; Minutes longer&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Afternoon FDHM is 57 Minutes longer&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We create a plot to give a better visual understanding of these metrics:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bike_cnt_15_min_modeled %&amp;gt;% 
+  ggplot() +
+  geom_line(aes(x = time, y = pred_commuting), color = plot_colors[2]) +
+  annotate(geom = &amp;quot;ribbon&amp;quot;, x = fdhm_stats_morning$times, ymax = Inf, ymin = -Inf, alpha = 0.1,
+           fill = plot_colors[2]) +
+  annotate(geom = &amp;quot;ribbon&amp;quot;, x = fdhm_stats_afternoon$times, ymax = Inf, ymin = -Inf, alpha = 0.1,
+           fill = plot_colors[2]) +
+  annotate(geom = &amp;quot;text&amp;quot;, 
+           x = fdhm_stats_morning$times[1] - 2*60*60, 
+           y = max(bike_cnt_15_min_modeled$pred_commuting),
+           label = paste0(&amp;quot;Morning FDHM:\n&amp;quot;, fdhm_stats_morning$fdhm, &amp;quot; Minutes&amp;quot;),
+           hjust = 0.5,
+           vjust = 1,
+           size = 3) +
+  annotate(geom = &amp;quot;text&amp;quot;, 
+           x = fdhm_stats_afternoon$times[2] + 2*60*60, 
+           y = max(bike_cnt_15_min_modeled$pred_commuting),
+           label = paste0(&amp;quot;Afternoon FDHM:\n&amp;quot;, fdhm_stats_afternoon$fdhm, &amp;quot; Minutes&amp;quot;),
+           hjust = 0.5,
+           vjust = 1,
+           size = 3) +
+  scale_x_datetime(labels = scales::date_format(&amp;quot;%H:%M&amp;quot;), date_breaks = &amp;quot;2 hours&amp;quot;) +
+  xlab(&amp;quot;Time of the Day&amp;quot;) +
+  ylab(&amp;quot;Bikes per 15 Minutes&amp;quot;) +
+  ggtitle(&amp;quot;According to the FDHM* metric the afternoon commuting peak lasts longer than the morning peak&amp;quot;,
+          &amp;quot;*Full Duration Half Maximum: Duration between points of y axis that are half the maximum amplitude&amp;quot;) +
+  my_theme&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-11-03-munich-bike-data-info-graphic_files/figure-html/fdhm_plot-1.png&#34; width=&#34;864&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;As a last part of the peak analysis we compare the total bike counts within the modeled peaks to see whether those are comparable:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt; bike_cnt_15_min %&amp;gt;% 
+  mutate(weekend = factor(ifelse(weekend == TRUE, &amp;quot;Weekend&amp;quot;, &amp;quot;Week&amp;quot;))) %&amp;gt;% 
+  group_by(weekend, time) %&amp;gt;% 
+  summarise(median = median(gesamt),
+            q1 = quantile(gesamt, 0.25),
+            q3 = quantile(gesamt, 0.75))  %&amp;gt;% 
+  mutate(peak = ifelse(time &amp;lt; noon, 
+                       &amp;quot;morning&amp;quot;,
+                       &amp;quot;afternoon&amp;quot;)) %&amp;gt;%  
+  filter(weekend == &amp;quot;Week&amp;quot;) %&amp;gt;% 
+  group_by(peak) %&amp;gt;% 
+  summarise(bike_count = sum(median))  %&amp;gt;% knitr::kable(digits = 2)&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;peak&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;bike_count&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;afternoon&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;612&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;morning&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;302&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;We see that the counts in the afternoon are twice as high as the morning counts. If people only would drive to work in the morning and back home in the afternoon, one would expect these two values to be equal. However, one explanation for this inequality could be that, once people finished their work, they don’t drive home immediately but go for other activities. These activities could be sports, meeting friends or doing the grocery, for instance. Thus, they would perhaps pass the counting stations more than once or pass a counting station which normally doesn’t lie on their commuting route. This could lead to the higher counts in the afternoon and would also be a explanation for some counts occurring very late in the evening (past 10pm).&lt;/p&gt;
+&lt;h3 id=&#34;share-of-modeled-commuting-traffic&#34;&gt;Share of Modeled Commuting Traffic&lt;/h3&gt;
+&lt;p&gt;Finally, we use our model to compute the share of commuting traffic during the week. To do so, we calculate the difference of daily counts between weekdays and weekend as well as the share of this difference on weekday counts.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;commuting_share &amp;lt;- bike_cnt_day %&amp;gt;% 
+  mutate(weekend = ifelse(weekend == TRUE, &amp;quot;weekend&amp;quot;, &amp;quot;week&amp;quot;)) %&amp;gt;% 
+  spread(key = direction, value = count) %&amp;gt;% 
+  group_by(zaehlstelle, weekend) %&amp;gt;% 
+  summarise(median_count = median(gesamt)) %&amp;gt;% 
+  ungroup() %&amp;gt;% 
+  spread(key = weekend, value = median_count) %&amp;gt;% 
+  mutate(diff_week_weekend = week - weekend,
+         share_commuting = diff_week_weekend / week) %&amp;gt;% 
+  arrange(zaehlstelle, desc(share_commuting)) %&amp;gt;% 
+  mutate(mean_share_commuting = mean(share_commuting),
+         median_share_commuting = median(share_commuting))
+
+commuting_share %&amp;gt;% 
+  select(zaehlstelle, share_commuting, mean_share_commuting, median_share_commuting) %&amp;gt;% 
+  knitr::kable(digits = 2)&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;zaehlstelle&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;share_commuting&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;mean_share_commuting&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;median_share_commuting&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Arnulf&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.47&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.42&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.44&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Erhardt&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.39&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.42&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.44&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Hirsch&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.51&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.42&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.44&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Kreuther&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.44&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.42&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.44&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Margareten&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.43&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.42&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.44&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Olympia&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.29&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.42&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.44&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;The modeled share of commuting traffic varies between the station and ranges from 29% to 51 %. The mean commuting share across all stations lies around 42%.&lt;/p&gt;
+&lt;h1 id=&#34;summary&#34;&gt;Summary&lt;/h1&gt;
+&lt;p&gt;Phew, that was a really long one! Thanks you for your interest in the analysis behind the info-graphic. I hope you got some interesting insights into the Munich bike traffic and found it as exciting as I did.&lt;/p&gt;
+&lt;p&gt;Let’s quickly sum up our analysis:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;To get a first overview, we created a map with all the stations.&lt;/li&gt;
+&lt;li&gt;We created a summary across all stations and for each station separately where we looked at the average 15 minute and daily counts, for instance. Further, we found out that Erhardt is the most frequented station and Kreuther has the fewest bike counts.&lt;/li&gt;
+&lt;li&gt;We found out that 5.8% of daily counted bikes at Arnulf Street arise from people driving at the wrong side of the road&lt;/li&gt;
+&lt;li&gt;We had a closer look on bike count records and found out about events like Münchner Ringparade and the 24h Mountain Bike Race in Munich.&lt;/li&gt;
+&lt;li&gt;Additionally we tried to figure out when most people are biking and how these days look like.&lt;/li&gt;
+&lt;li&gt;Finally we modeled the commuting traffic. Even if our commuting model is by far not perfect, it gave us some interesting insights on peak commuting times.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Before I finish, I want to thank the Munich Open Data Team - especially Frank Börger - for their great support and for providing me with inspirations and additional data. Also, great thanks to my friends and colleagues Ryan, Stephie, Flo and Pat for proof reading!&lt;/p&gt;
+&lt;p&gt;It’s getting winter now as I am writing this post, but I hope that your new knowledge about bike counts in Munich motivates you to also go out and ride your bike. Maybe you are living in Munich and want to add a few counts to the stations. If not, perhaps your city also has similar counting stations which you can check out. Try to do some research!&lt;/p&gt;
+&lt;p&gt;As always: If you want to add something or give me feedback just send me a message. I highly appreciate it! Also feel free to share the info-graphic with your friends, but please make sure to link the post in the resources!&lt;/p&gt;
+&lt;h1 id=&#34;literature&#34;&gt;Literature&lt;/h1&gt;
+&lt;p&gt;&lt;em&gt;Zorn, Elisabeth; Hager, Gerhard; Wöppel, Hans-Dieter: Datenerhebungen zum Radverkehr in München Jg.55, Nr.1, 2011 (p.32 - 39)&lt;/em&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;hr /&gt;
+&lt;center&gt;
+&lt;button class=&#34;btn btn-primary btn-outline&#34; id=&#34;btn-toggle-analysis&#34; onclick=&#34;showAnalysis()&#34;&gt;
+Show Analysis
+&lt;/button&gt;
+&lt;/center&gt;
+&lt;hr /&gt;
+&lt;script&gt; 
+function showAnalysis() {
+    var btn = document.getElementById(&#39;btn-toggle-analysis&#39;);
+    var x = document.getElementById(&#39;analysis&#39;);
+        if (x.style.display === &#39;none&#39;) {
+            btn.firstChild.data = &#34;Hide Analysis&#34;;
+            x.style.display = &#39;block&#39;;
+        } else {
+            btn.firstChild.data = &#34;Show Analysis&#34;
+            x.style.display = &#39;none&#39;;
+    }
+}
+&lt;/script&gt;
+</description>
+    </item>
+    
+    <item>
       <title>USA School Shootings</title>
       <link>/post/usa-school-shootings/</link>
       <pubDate>Mon, 28 May 2018 00:00:00 +0000</pubDate>

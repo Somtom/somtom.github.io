@@ -7,10 +7,20 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018</copyright>
-    <lastBuildDate>Mon, 28 May 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 03 Nov 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/r/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Munich Bike Data Info Graphic</title>
+      <link>/post/munich-bike-data-info-graphic/</link>
+      <pubDate>Sat, 03 Nov 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/post/munich-bike-data-info-graphic/</guid>
+      <description>During this year’s summer break there had been a railway construction site which affected the train I usually use for commuting to work. This led to a lot of additional commuting time. Thus, I decided to repair my old mountain bike and give it a try to go to work by bike.
+During the one hour ride I wondered how many people made the same decision and if there would be any data about Munich bike traffic with the use of which I could get some insights about Munich’s bike traffic.</description>
+    </item>
     
     <item>
       <title>USA School Shootings</title>
