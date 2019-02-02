@@ -1,0 +1,38 @@
+`r paste0('#', product_group, '{data-navmenu="Product Groups"}')`
+
+`r shiny::tags$h1(product_group, style="text-align:center")`
+
+Row
+-----------------------------------------------------------------------
+
+### Product Share on Trade Volume
+
+```{r fig.width=10}
+subpage_data %>% 
+  group_by(product) %>% 
+  summarise(trade_volume = sum(trade_volume)) %>% 
+  ggplot() +
+  geom_col(aes(x = reorder(product, -trade_volume), y = trade_volume), 
+           fill = "#2780e3",
+           alpha = 0.8) +
+  scale_y_continuous(labels = scales::dollar) +
+  theme_minimal() +
+  ylab("Trade Volume") +
+  xlab("Product")
+```
+
+
+### Products with Most Trade Volume
+
+```{r}
+subpage_data %>% 
+  group_by(Product = product) %>% 
+  summarise(`Trade Volume [€]` = sum(trade_volume)) %>% 
+  arrange(-`Trade Volume [€]`) %>% 
+  knitr::kable()
+```
+
+
+
+
+
