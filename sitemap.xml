@@ -5,6 +5,15 @@
     
     <url>
     
+      <loc>/post/using-dynamically-rendered-r-markdown-childs-for-reports/</loc>
+      <lastmod>2019-01-19T00:00:00+00:00</lastmod>
+    </url>
+    
+  
+    
+    
+    <url>
+    
       <loc>/post/munich-bike-data-info-graphic/</loc>
       <lastmod>2018-11-03T00:00:00+00:00</lastmod>
     </url>
@@ -231,6 +240,16 @@
     
     <url>
     
+      <loc>/tags/flexdashboard/</loc>
+      <lastmod>2019-01-19T00:00:00+00:00</lastmod>
+      <priority>0</priority>
+    </url>
+    
+  
+    
+    
+    <url>
+    
       <loc>/tags/geocoding/</loc>
       <lastmod>2018-05-27T00:00:00+00:00</lastmod>
       <priority>0</priority>
@@ -312,7 +331,17 @@
     <url>
     
       <loc>/tags/r/</loc>
-      <lastmod>2018-11-03T00:00:00+00:00</lastmod>
+      <lastmod>2019-01-19T00:00:00+00:00</lastmod>
+      <priority>0</priority>
+    </url>
+    
+  
+    
+    
+    <url>
+    
+      <loc>/tags/rmarkdown/</loc>
+      <lastmod>2019-01-19T00:00:00+00:00</lastmod>
       <priority>0</priority>
     </url>
     
@@ -362,7 +391,7 @@
     <url>
     
       <loc>/categories/tutorials/</loc>
-      <lastmod>2018-05-27T00:00:00+00:00</lastmod>
+      <lastmod>2019-01-19T00:00:00+00:00</lastmod>
       <priority>0</priority>
     </url>
     

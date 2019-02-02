@@ -13,6 +13,15 @@
     
     
     <item>
+      <title>Dynamically Rendered Flexdashboard Pages Using RMarkdown Childs</title>
+      <link>/post/using-dynamically-rendered-r-markdown-childs-for-reports/</link>
+      <pubDate>Sat, 19 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/using-dynamically-rendered-r-markdown-childs-for-reports/</guid>
+      <description>Dashboards are nice tools when it comes to analyzing quickly changing data. Nevertheless, you may also use them for reporting purposes by taking snapshots. R has a nice library called flexdashboard which you can use for creating dashboards out of RMarkdown files. During a project at work we found a nice solution for dynamically rendering flexdashboard pages by using R Markdown child templates which I want to share with you in this blog post.</description>
+    </item>
+    
+    <item>
       <title>Munich Bike Data Info Graphic</title>
       <link>/post/munich-bike-data-info-graphic/</link>
       <pubDate>Sat, 03 Nov 2018 00:00:00 +0000</pubDate>
