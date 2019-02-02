@@ -98,6 +98,7 @@ subpage_env &amp;lt;- new.env()&lt;/code&gt;&lt;/pre&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://rmarkdown.rstudio.com/flexdashboard/&#34;&gt;Flexdashboard documentation&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://stackoverflow.com/questions/21729415/generate-dynamic-r-markdown-blocks/21730473#comment65652301_21730473&#34;&gt;Stackoverflow question&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/rstudio/flexdashboard/issues/80&#34;&gt;GitHub issue in flexdashboard repository&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
 &lt;div id=&#34;markdown-files&#34; class=&#34;section level1&#34;&gt;
