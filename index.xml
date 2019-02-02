@@ -89,7 +89,7 @@ subpage_env &amp;lt;- new.env()&lt;/code&gt;&lt;/pre&gt;
   out = c(out, knitr::knit_child(&amp;#39;subpage.RMD&amp;#39;, envir = subpage_env))
 }&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;This is basically it. Let me know what you think of our approach or if you have any improvement ideas on it. You might also want to have a closer look into the example files &lt;code&gt;overview.RMD&lt;/code&gt; and &lt;code&gt;subpage.RMD&lt;/code&gt; which you find at the bottom of this post.&lt;/p&gt;
-&lt;p&gt;Find a demo of the dashboard we created in this post &lt;a href=&#34;/post/2019-01-19-using-dynamically-rendered-r-markdown-childs-for-reports_files/dashboard.html&#34;&gt;&lt;strong&gt;here&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Find a demo of the dashboard we created in this post &lt;a href=&#34;/post/2019-01-19-using-dynamically-rendered-r-markdown-childs-for-reports_files/dashboard.html&#34; target=&#34;_blank&#34;&gt;&lt;strong&gt;here&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;div id=&#34;further-reading&#34; class=&#34;section level1&#34;&gt;
