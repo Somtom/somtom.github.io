@@ -16,37 +16,56 @@
       <pubDate>Sat, 19 Jan 2019 00:00:00 +0000</pubDate>
       
       <guid>/post/using-dynamically-rendered-r-markdown-childs-for-reports/</guid>
-      <description>&lt;p&gt;Dashboards are nice tools when it comes to analyzing quickly changing data. Nevertheless, you may also use them for reporting purposes by taking snapshots. R has a nice library called &lt;code&gt;flexdashboard&lt;/code&gt; which you can use for creating dashboards out of &lt;code&gt;RMarkdown&lt;/code&gt; files. During a project at work we found a nice solution for dynamically rendering flexdashboard pages by using R Markdown child templates which I want to share with you in this blog post.&lt;/p&gt;
-&lt;p&gt;In our project we wanted to dynamically create a dashboard-style report. It should automatically fetch data by the use of parameters which are specified and passed to the knitting function. This can easily be solved by using &lt;strong&gt;RMarkdown parameters&lt;/strong&gt;. An additional problem we had though, was that we wanted the report to have an &lt;strong&gt;overview page&lt;/strong&gt; with important information but also &lt;strong&gt;subpages&lt;/strong&gt; with dynamically knitted detail analysis. The subpages should all have the same format but their number would be depending on the fetched data (i.e. number of different subgroups).&lt;/p&gt;
+      <description>&lt;p&gt;Dashboards are nice tools when it comes to analyzing quickly changing data. Nevertheless,
+you may also use them for reporting purposes by taking snapshots. R has a nice library
+called &lt;code&gt;flexdashboard&lt;/code&gt; which you can use for creating dashboards out of &lt;code&gt;RMarkdown&lt;/code&gt; files.
+During a project at work we found a nice solution for dynamically rendering flexdashboard pages
+by using R Markdown child templates which I want to share with you in this blog post.&lt;/p&gt;
+&lt;p&gt;In our project we wanted to dynamically create a dashboard-style report. It should automatically
+fetch data by the use of parameters which are specified and passed to the knitting function.
+This can easily be solved by using &lt;strong&gt;RMarkdown parameters&lt;/strong&gt;. An additional problem we had though,
+was that we wanted the report to have an &lt;strong&gt;overview page&lt;/strong&gt; with important information but also
+&lt;strong&gt;subpages&lt;/strong&gt; with dynamically knitted detail analysis. The subpages should all have the same
+format but their number would be depending on the fetched data (i.e. number of different
+subgroups).&lt;/p&gt;
 &lt;div id=&#34;example-use-case&#34; class=&#34;section level1&#34;&gt;
 &lt;h1&gt;Example Use Case&lt;/h1&gt;
 &lt;p&gt;Let’s go through the problem and our approach with a made up example:&lt;br /&gt;
-Imagine we want to analyse the performance of a company’s products. We plan to have an overview page where we show summarized information about all products of the company. This could for example be:&lt;/p&gt;
+Imagine we want to analyse the performance of a company’s products. We plan to have an
+overview page where we show summarized information about all products of the company.
+This could for example be:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Trade volume by time&lt;/li&gt;
 &lt;li&gt;Product groups’ share on company’s trade volume and order count&lt;/li&gt;
 &lt;li&gt;…&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;The recipient of the report also wants a deeper analysis of each product group in order to gain more detailed information. Therefore, we plan to create subpages within our report which show information like:&lt;/p&gt;
+&lt;p&gt;The recipient of the report also wants a deeper analysis of each product group in order to gain
+more detailed information. Therefore, we plan to create subpages within our report which show
+information like:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Trade volumes share of products within their product group&lt;/li&gt;
 &lt;li&gt;Products with most trade volume&lt;/li&gt;
 &lt;li&gt;…&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;The following gif shows how the report could look like. It is probably not the most sophisticated and beautiful report you have ever seen but it should be OK for example purposes:&lt;/p&gt;
-&lt;div class=&#34;figure&#34;&gt;
-&lt;img src=&#34;/post/2019-01-19-using-dynamically-rendered-r-markdown-childs-for-reports_files/example.gif&#34; /&gt;
-
-&lt;/div&gt;
-&lt;p&gt;While each subpage should have the exact same format, the count of pages will depend on the data (i.e. the product groups) we fetch for a specific company. The approach we show in this post is to use a &lt;code&gt;overview.RMD&lt;/code&gt; file which has all the code for the &lt;strong&gt;overview page&lt;/strong&gt; and a &lt;code&gt;subpage.RMD&lt;/code&gt; file which should serve as a template for the &lt;strong&gt;subpages&lt;/strong&gt;. We then want to somehow render the subpage for each product group in the data (i.e. by using a &lt;em&gt;for-loop&lt;/em&gt; within &lt;code&gt;overview.RMD&lt;/code&gt;) and integrate all these pages into one report. The following diagram should give you an abstract idea of the process we plan to implement:&lt;/p&gt;
-&lt;div class=&#34;figure&#34;&gt;
-&lt;img src=&#34;/post/2019-01-19-using-dynamically-rendered-r-markdown-childs-for-reports_files/main_subpage.png&#34; /&gt;
-
-&lt;/div&gt;
+&lt;p&gt;The following gif shows how the report could look like.
+It is probably not the most sophisticated and beautiful report you have ever seen
+but it should be OK for example purposes:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2019-01-19-using-dynamically-rendered-r-markdown-childs-for-reports_files/example.gif&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;While each subpage should have the exact same format, the count of pages will depend on the data
+(i.e. the product groups) we fetch for a specific company.
+The approach we show in this post is to use a &lt;code&gt;overview.RMD&lt;/code&gt; file which has all the code for the
+&lt;strong&gt;overview page&lt;/strong&gt; and a &lt;code&gt;subpage.RMD&lt;/code&gt; file which should serve as a template for the &lt;strong&gt;subpages&lt;/strong&gt;.
+We then want to somehow render the subpage for each product group in the data (i.e. 
+by using a &lt;em&gt;for-loop&lt;/em&gt; within &lt;code&gt;overview.RMD&lt;/code&gt;) and integrate all these pages into one report.
+The following diagram should give you an abstract idea of the process we plan to implement:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2019-01-19-using-dynamically-rendered-r-markdown-childs-for-reports_files/main_subpage.png&#34; /&gt;&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;lets-do-it&#34; class=&#34;section level1&#34;&gt;
 &lt;h1&gt;Let’s do it!&lt;/h1&gt;
-&lt;p&gt;We will go through our approach step by step and I am going to show you the important code chunks you need. The following list will give you an overview on the issues we need to master in order to integrate the subpage template into &lt;code&gt;overview.RMD&lt;/code&gt;:&lt;/p&gt;
+&lt;p&gt;We will go through our approach step by step and I am going to show you the important code
+chunks you need.
+The following list will give you an overview on the issues we need to master
+in order to integrate the subpage template into &lt;code&gt;overview.RMD&lt;/code&gt;:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Dynamically create page name for each product group and add it to a navbar menu&lt;/li&gt;
 &lt;li&gt;Dynamically create page content for given product group &lt;code&gt;Product Groups&lt;/code&gt;&lt;/li&gt;
@@ -54,7 +73,10 @@ Imagine we want to analyse the performance of a company’s products. We plan to
 &lt;/ul&gt;
 &lt;div id=&#34;preparations&#34; class=&#34;section level2&#34;&gt;
 &lt;h2&gt;Preparations&lt;/h2&gt;
-&lt;p&gt;Before we tackle those issues, we need to find all unique product groups we want to create the subpages for, and initialize a &lt;code&gt;out&lt;/code&gt; variable which stores all content knitted within our loop. Additionally, we need to change the &lt;code&gt;knitr&lt;/code&gt; options to allow duplicated chunk labels. Otherwise we cannot loop through &lt;code&gt;subpage.RMD&lt;/code&gt; anymore if we would use the same chunk labels.&lt;/p&gt;
+&lt;p&gt;Before we tackle those issues, we need to find all unique product groups we want to create the
+subpages for, and initialize a &lt;code&gt;out&lt;/code&gt; variable which stores all content knitted within our loop.
+Additionally, we need to change the &lt;code&gt;knitr&lt;/code&gt; options to allow duplicated chunk labels.
+Otherwise we cannot loop through &lt;code&gt;subpage.RMD&lt;/code&gt; anymore if we would use the same chunk labels.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Get all unique product groups for the subpages
 product_groups &amp;lt;- unique(data$product_group)
 
@@ -63,19 +85,28 @@ out = NULL
 
 # Set knitr options to allow duplicate labels (needed for the subpages)
 options(knitr.duplicate.label = &amp;#39;allow&amp;#39;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The first trick we use for our subpage rendering is the creation of a &lt;strong&gt;separate environment&lt;/strong&gt; which stores the data needed in &lt;code&gt;subpage.RMD&lt;/code&gt; (i.e. the filtered data). We create this environment and call it &lt;code&gt;subpage_env&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The first trick we use for our subpage rendering is the creation of a &lt;strong&gt;separate environment&lt;/strong&gt;
+which stores the data needed in &lt;code&gt;subpage.RMD&lt;/code&gt; (i.e. the filtered data). We create this
+environment and call it &lt;code&gt;subpage_env&lt;/code&gt;.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Create temporary environment which we use for knitting subpage.RMD 
 subpage_env &amp;lt;- new.env()&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 &lt;div id=&#34;dynamic-page-name-in-navbar-menu&#34; class=&#34;section level2&#34;&gt;
 &lt;h2&gt;Dynamic Page Name in Navbar Menu&lt;/h2&gt;
-&lt;p&gt;To dynamically create a navbar entry for a product group page during the knitting process, we use some code within &lt;code&gt;subpage.RMD&lt;/code&gt; which does the job:&lt;/p&gt;
+&lt;p&gt;To dynamically create a navbar entry for a product group page during the knitting process,
+we use some code within &lt;code&gt;subpage.RMD&lt;/code&gt; which does the job:&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;`r paste0(&amp;#39;# &amp;#39;, product_group, &amp;#39;{data-navmenu=&amp;quot;Product Groups&amp;quot;}&amp;#39;)`&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This line will create a level 1 header which &lt;code&gt;flexdashboard&lt;/code&gt; translates into a new page. As we use &lt;code&gt;{data-navmenu=&amp;quot;Product Groups&amp;quot;}&lt;/code&gt;, all product group pages will be placed within a navbar menu called &lt;code&gt;Product Groups&lt;/code&gt;. The entry will be the product group’s name. Basically this creates a markdown line which could for example look like this: &lt;code&gt;# PG1 {data-navmenu=&amp;quot;Product Groups&amp;quot;}&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;This line will create a level 1 header which &lt;code&gt;flexdashboard&lt;/code&gt; translates into a new page.
+As we use &lt;code&gt;{data-navmenu=&#34;Product Groups&#34;}&lt;/code&gt;, all product group pages will be placed within a
+navbar menu called &lt;code&gt;Product Groups&lt;/code&gt;. The entry will be the product group’s name.
+Basically this creates a markdown line which could for example look like this:
+&lt;code&gt;# PG1 {data-navmenu=&#34;Product Groups&#34;}&lt;/code&gt;&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;filter-data-and-knit-subpage&#34; class=&#34;section level2&#34;&gt;
 &lt;h2&gt;Filter Data and Knit Subpage&lt;/h2&gt;
-&lt;p&gt;Now everything is prepared and we can loop through each product group, filter the data accordingly, assign the corresponding variables to &lt;code&gt;subpage_env&lt;/code&gt; and knit the page using our subpage environment. The knitted result will be added to our &lt;code&gt;out&lt;/code&gt; variable.&lt;/p&gt;
+&lt;p&gt;Now everything is prepared and we can loop through each product group, filter the data
+accordingly, assign the corresponding variables to &lt;code&gt;subpage_env&lt;/code&gt; and knit the page using
+our subpage environment. The knitted result will be added to our &lt;code&gt;out&lt;/code&gt; variable.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;for (pg in product_groups) {
   # Filter data for product group 
   subpage_data &amp;lt;- data %&amp;gt;% 
@@ -88,18 +119,28 @@ subpage_env &amp;lt;- new.env()&lt;/code&gt;&lt;/pre&gt;
   # Knit subpage.RMD using the subpage_env and add result to out vector
   out = c(out, knitr::knit_child(&amp;#39;subpage.RMD&amp;#39;, envir = subpage_env))
 }&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This is basically it. Let me know what you think of our approach or if you have any improvement ideas on it. You might also want to have a closer look into the example files &lt;code&gt;overview.RMD&lt;/code&gt; and &lt;code&gt;subpage.RMD&lt;/code&gt; which you find at the bottom of this post.&lt;/p&gt;
-&lt;p&gt;Find a demo of the dashboard we created in this post &lt;a href=&#34;/post/2019-01-19-using-dynamically-rendered-r-markdown-childs-for-reports_files/dashboard.html&#34; target=&#34;_blank&#34;&gt;&lt;strong&gt;here&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;This is basically it. Let me know what you think of our approach or if you have any improvement
+ideas on it. You might also want to have a closer look into the example files &lt;code&gt;overview.RMD&lt;/code&gt;
+and &lt;code&gt;subpage.RMD&lt;/code&gt; which you find at the bottom of this post.&lt;/p&gt;
+&lt;p&gt;Find a demo of the dashboard we created in this post
+&lt;a href=&#34;/post/2019-01-19-using-dynamically-rendered-r-markdown-childs-for-reports_files/dashboard.html&#34; target=&#34;_blank&#34;&gt;&lt;strong&gt;here&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;div id=&#34;further-reading&#34; class=&#34;section level1&#34;&gt;
 &lt;h1&gt;Further Reading&lt;/h1&gt;
-&lt;p&gt;I suggest going to the documentation of &lt;code&gt;flexdashboard&lt;/code&gt; if you want to learn more about the package. Furthermore, I want to provide you with some additional links which helped me evolving the idea.&lt;/p&gt;
+&lt;p&gt;I suggest going to the documentation of &lt;code&gt;flexdashboard&lt;/code&gt; if you want to learn more about
+the package. Furthermore, I want to provide you with some additional links which helped me evolving
+the idea.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://rmarkdown.rstudio.com/flexdashboard/&#34;&gt;Flexdashboard documentation&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://stackoverflow.com/questions/21729415/generate-dynamic-r-markdown-blocks/21730473#comment65652301_21730473&#34;&gt;Stackoverflow question&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/rstudio/flexdashboard/issues/80&#34;&gt;GitHub issue in flexdashboard repository&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+&lt;/div&gt;
+&lt;div id=&#34;update-2020-04-01&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Update 2020-04-01&lt;/h1&gt;
+&lt;p&gt;Corrected a typo in the markdown which broke the menu generation.
+Thanks to Chris Brown for pointing that out.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;markdown-files&#34; class=&#34;section level1&#34;&gt;
 &lt;h1&gt;Markdown Files&lt;/h1&gt;
@@ -228,7 +269,7 @@ for (pg in product_groups) {
 &lt;/div&gt;
 &lt;div id=&#34;subpage.rmd&#34; class=&#34;section level2&#34;&gt;
 &lt;h2&gt;Subpage.RMD&lt;/h2&gt;
-&lt;pre&gt;&lt;code&gt;`r paste0(&amp;#39;#&amp;#39;, product_group, &amp;#39;{data-navmenu=&amp;quot;Product Groups&amp;quot;}&amp;#39;)`
+&lt;pre&gt;&lt;code&gt;`r paste0(&amp;#39;# &amp;#39;, product_group, &amp;#39;{data-navmenu=&amp;quot;Product Groups&amp;quot;}&amp;#39;)`
 
 `r shiny::tags$h1(product_group, style=&amp;quot;text-align:center&amp;quot;)`
 
@@ -257,8 +298,8 @@ subpage_data %&amp;gt;%
 ```{r}
 subpage_data %&amp;gt;% 
   group_by(Product = product) %&amp;gt;% 
-  summarise(`Trade Volume [â‚¬]` = sum(trade_volume)) %&amp;gt;% 
-  arrange(-`Trade Volume [â‚¬]`) %&amp;gt;% 
+  summarise(`Trade Volume [â¬]` = sum(trade_volume)) %&amp;gt;% 
+  arrange(-`Trade Volume [â¬]`) %&amp;gt;% 
   knitr::kable()
 ```&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;

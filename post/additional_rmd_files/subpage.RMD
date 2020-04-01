@@ -1,4 +1,4 @@
-`r paste0('#', product_group, '{data-navmenu="Product Groups"}')`
+`r paste0('# ', product_group, '{data-navmenu="Product Groups"}')`
 
 `r shiny::tags$h1(product_group, style="text-align:center")`
 
